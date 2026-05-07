@@ -369,6 +369,60 @@ p { max-width: 68ch; }
 
 
 /* ============================================================
+   IMPACT BAR
+============================================================ */
+.impact-bar {
+  background-color: var(--color-primary);
+  padding: 56px 0;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem 1.5rem;
+}
+
+.impact-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+}
+
+.impact-number {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.impact-label {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.72);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  max-width: 14ch;
+}
+
+@media (min-width: 600px) {
+  .impact-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .impact-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+  }
+}
+
+
+/* ============================================================
    ECO CANADA CALLOUT
 ============================================================ */
 .eco-callout {
