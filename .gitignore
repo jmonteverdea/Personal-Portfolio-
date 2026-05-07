@@ -1,0 +1,9 @@
+# Claude Code dev tooling — not needed for deployment
+.claude/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
