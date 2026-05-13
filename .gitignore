@@ -1,5 +1,14 @@
-# Claude Code dev tooling — not needed for deployment
+# Claude Code dev tooling
 .claude/
+
+# Private working notes
+ABOUT ME/
+
+# Old source files that have been renamed and moved into assets/
+CEMI-AEE-183881-12032025.pdf
+GUIA DE EFICIENCIA ENERGETICA DESCARGAR.pdf
+Image_20260211_103513.jpg
+jorge-lastname-cv-2026.pdf).docx.pdf
 
 # macOS
 .DS_Store
@@ -7,3 +16,11 @@
 # Editor
 .vscode/
 *.swp
+portfolio-redesign/assets/docs/cedes-national-energy-guide.pdf
+portfolio-redesign/assets/docs/cem-certificate.pdf
+portfolio-redesign/assets/docs/jorge-monteverde-cv-2026.pdf
+portfolio-redesign/assets/images/headshot-portrait.jpg
+portfolio-redesign/assets/images/headshot-square.jpg
+portfolio-redesign/assets/images/og-image.png
+portfolio-redesign/assets/images/favicon-source-face.png
+portfolio-redesign/assets/docs/README.md
