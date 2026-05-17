@@ -263,6 +263,25 @@ p { max-width: 65ch; }
   .hero { padding: 144px 0 112px; }
 }
 
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin-bottom: 28px;
+  max-width: 52ch;
+}
+.hero-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
 .hero-title {
   font-size: clamp(44px, 8vw, 104px);
   font-weight: 900;
@@ -270,11 +289,6 @@ p { max-width: 65ch; }
   line-height: 0.98;
   max-width: 18ch;
   margin-bottom: 32px;
-}
-.hero-title-sub {
-  display: block;
-  color: var(--muted);
-  font-weight: 800;
 }
 
 .hero-prop {
@@ -352,29 +366,33 @@ p { max-width: 65ch; }
 /* ============================================================
    ABOUT
 ============================================================ */
-.about-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 48px;
+.about-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  margin-top: 40px;
 }
 @media (min-width: 1024px) {
-  .about-grid {
-    grid-template-columns: 1fr 1.6fr;
-    gap: 96px;
-  }
+  .about-stack { gap: 80px; margin-top: 56px; }
 }
 
-.about-meta h2 {
-  margin-top: 18px;
-  font-size: clamp(24px, 3vw, 36px);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  max-width: 28ch;
+.about-block {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
+.about-block .case-label { color: var(--muted); }
 
-.about-body {
+.about-do {
   display: grid;
-  gap: 40px;
+  gap: 32px;
+}
+@media (min-width: 768px) {
+  .about-do {
+    grid-template-columns: 240px 1fr;
+    gap: 48px;
+    align-items: start;
+  }
 }
 
 .about-portrait img {
@@ -384,10 +402,20 @@ p { max-width: 65ch; }
   border-radius: 6px;
   filter: grayscale(15%) contrast(1.02);
 }
-
 @media (min-width: 640px) {
   .about-portrait img { width: 240px; height: 240px; }
 }
+
+.about-pov {
+  font-size: clamp(22px, 2.8vw, 34px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  max-width: 30ch;
+}
+
+.about-cta { align-self: flex-start; }
 
 .prose p {
   margin-bottom: 18px;
