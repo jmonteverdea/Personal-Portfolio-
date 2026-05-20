@@ -1080,3 +1080,302 @@ p { max-width: 65ch; }
   max-width: 65ch;
   margin-top: 8px;
 }
+
+
+/* ============================================================
+   V4 DESIGN PASS
+============================================================ */
+
+/* Hero: editorial weight on the headline, status pill with dot */
+.hero-title {
+  font-size: clamp(40px, 7.5vw, 88px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  max-width: 22ch;
+  margin-bottom: 36px;
+}
+@media (min-width: 1024px) {
+  .hero-title { font-size: clamp(56px, 7vw, 96px); line-height: 1.05; }
+}
+
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 6px 14px 6px 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 100px;
+  margin-bottom: 32px;
+}
+.hero-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(215, 232, 100, 0.6);
+  flex-shrink: 0;
+}
+
+.hero-prop {
+  font-size: clamp(17px, 1.5vw, 19px);
+  line-height: 1.65;
+  color: var(--fg);
+  max-width: 62ch;
+  margin-bottom: 48px;
+}
+
+/* CTA hierarchy: primary stays solid; secondary becomes ghost; LinkedIn becomes a text link with arrow */
+.hero-ctas .btn-secondary[target="_blank"]:last-child {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 4px;
+  padding-right: 8px;
+}
+.hero-ctas .btn-secondary[target="_blank"]:last-child:hover {
+  border-color: transparent;
+  color: var(--accent);
+}
+
+/* Stat tiles: subtle vertical dividers between tiles on desktop */
+@media (min-width: 1024px) {
+  .stat-tile { position: relative; padding-left: 24px; }
+  .stat-tile + .stat-tile::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 8px;
+    width: 1px;
+    background: var(--rule);
+  }
+}
+.stat-label {
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+
+/* ============================================================
+   ECO CANADA HIRING CALLOUT
+============================================================ */
+.eco-section {
+  padding: 24px 0 0;
+}
+@media (min-width: 1024px) { .eco-section { padding: 32px 0 0; } }
+
+.eco-callout {
+  display: grid;
+  gap: 8px;
+  padding: 28px 32px;
+  border: 1px solid rgba(215, 232, 100, 0.35);
+  border-left-width: 3px;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(215, 232, 100, 0.06), rgba(215, 232, 100, 0.02));
+  max-width: 760px;
+}
+
+.eco-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+
+.eco-headline {
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--fg);
+  margin: 0;
+  max-width: none;
+}
+
+.eco-body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 4px 0 0;
+  max-width: none;
+}
+.eco-body strong {
+  color: var(--accent);
+  font-weight: 700;
+  font-feature-settings: var(--tnum);
+}
+
+
+/* ============================================================
+   CASE STUDY: outcome-first subtitle, video caption, artifact block
+============================================================ */
+.case-outcome {
+  font-size: clamp(16px, 1.8vw, 20px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+  margin-top: 12px;
+  max-width: 36ch;
+}
+
+.case-video-caption {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 14px;
+  letter-spacing: 0.02em;
+  max-width: 60ch;
+}
+.case-video-caption strong {
+  color: var(--accent);
+  font-weight: 600;
+  font-feature-settings: var(--tnum);
+}
+
+.case-artifact {
+  margin-top: 8px;
+  padding: 20px 24px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+}
+.case-artifact .case-label {
+  margin-bottom: 8px;
+}
+.case-artifact-line {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  max-width: 50ch;
+}
+
+
+/* ============================================================
+   TESTIMONIAL POLISH: decorative quote glyph, subtle bg tint
+============================================================ */
+.case-testimonial {
+  position: relative;
+  margin: 16px 0 0;
+  padding: 28px 32px 28px 56px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.case-testimonial::before {
+  content: "\201C";
+  position: absolute;
+  left: 16px;
+  top: 8px;
+  font-family: Georgia, serif;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.case-testimonial blockquote {
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--fg);
+  max-width: 58ch;
+  margin: 0;
+}
+.case-testimonial figcaption {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  border-top: 0;
+  padding-top: 4px;
+}
+
+
+/* ============================================================
+   ABOUT sub-block separators
+============================================================ */
+.about-block + .about-block {
+  position: relative;
+}
+.about-block + .about-block::before {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.6;
+  margin-bottom: 32px;
+}
+
+/* Sharper About POV statement */
+.about-pov {
+  font-size: clamp(24px, 3.2vw, 38px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  max-width: 28ch;
+}
+
+
+/* ============================================================
+   INDEX-CARD: cleaner hover + clearer outcome blurb hierarchy
+============================================================ */
+.index-card { position: relative; }
+.index-card .index-link {
+  transition: color 180ms ease, transform 180ms ease;
+}
+.index-card:hover .index-link {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+.index-card:hover .index-num {
+  color: var(--accent);
+}
+
+
+/* ============================================================
+   WORK-INDEX heading spacing bump
+============================================================ */
+.work-index h2 {
+  font-size: clamp(28px, 4vw, 48px);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  max-width: 24ch;
+  margin-top: 16px;
+  margin-bottom: 72px;
+}
+
+
+/* ============================================================
+   PROMOTION TIMELINE polish at desktop
+============================================================ */
+@media (min-width: 768px) {
+  .promo-timeline .promo-note {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+
+/* ============================================================
+   MOBILE: hero, eco callout, testimonial padding tuning
+============================================================ */
+@media (max-width: 720px) {
+  .eco-callout { padding: 22px 22px; }
+  .case-testimonial { padding: 22px 20px 22px 44px; }
+  .case-testimonial::before { font-size: 48px; left: 12px; top: 4px; }
+  .case-outcome { font-size: 16px; }
+}
