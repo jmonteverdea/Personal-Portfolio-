@@ -804,3 +804,279 @@ p { max-width: 65ch; }
 @media (prefers-reduced-motion: reduce) {
   .fade-in { opacity: 1; transform: none; transition: none; }
 }
+
+
+/* ============================================================
+   V3 FINAL: WORK INDEX GRID
+============================================================ */
+.work-index { padding-bottom: 0; }
+.work-index h2 {
+  max-width: 22ch;
+  margin-top: 16px;
+  margin-bottom: 64px;
+}
+
+.work-index-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 720px) {
+  .work-index-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+@media (min-width: 1024px) {
+  .work-index-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+}
+
+.index-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 24px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  transition: transform 180ms ease, border-color 180ms ease;
+  text-decoration: none;
+  color: var(--fg);
+}
+.index-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--rule-strong);
+}
+.index-num {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  font-feature-settings: var(--tnum);
+}
+.index-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+}
+.index-blurb {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  flex: 1;
+}
+.index-link {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+
+/* ============================================================
+   V3 FINAL: CASE HERO IMAGE (CEDES guide cover)
+============================================================ */
+.case-hero-image figure { margin: 0; }
+.case-hero-image img {
+  max-width: 320px;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow:
+    0 30px 80px -20px rgba(0, 0, 0, 0.6),
+    0 8px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+
+/* ============================================================
+   V3 FINAL: CASE VIDEO
+============================================================ */
+.case-video-el {
+  width: 100%;
+  max-width: 720px;
+  display: block;
+  border-radius: 6px;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--rule);
+}
+
+
+/* ============================================================
+   V3 FINAL: TRCA SCORING MATRIX
+============================================================ */
+.matrix-wrap,
+.flow-wrap {
+  margin-top: 12px;
+  padding: 24px;
+  background: var(--bg-elevated);
+  border-radius: 6px;
+  border: 1px solid var(--rule);
+}
+.matrix-svg,
+.flow-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.matrix-caption,
+.flow-caption {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 14px;
+  max-width: 50ch;
+}
+
+
+/* ============================================================
+   V3 FINAL: BRIGHT HORIZONTAL TIMELINE (@ ≥768px)
+============================================================ */
+@media (min-width: 768px) {
+  .promo-timeline {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    position: relative;
+    margin-top: 24px;
+  }
+  .promo-timeline::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: var(--rule-strong);
+    z-index: 0;
+  }
+  .promo-timeline li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 0;
+    border: 0;
+    position: relative;
+    z-index: 1;
+    background: var(--bg);
+    padding-right: 16px;
+  }
+  .promo-timeline li:last-child {
+    border-bottom: 0;
+  }
+  .promo-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    font-size: 13px;
+  }
+  .promo-title { margin-top: 4px; }
+  .promo-note { grid-column: auto; margin-top: 0; }
+}
+
+
+/* ============================================================
+   V3 FINAL: DECISIONS AND TRADEOFFS
+============================================================ */
+.decisions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+}
+.decisions-list li {
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 62ch;
+}
+.decisions-list li:last-child { border-bottom: 1px solid var(--rule); }
+
+
+/* ============================================================
+   V3 FINAL: INLINE TESTIMONIAL
+============================================================ */
+.case-testimonial {
+  margin: 8px 0 0;
+  padding: 24px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.case-testimonial blockquote {
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--fg);
+  max-width: 50ch;
+  margin: 0;
+  padding: 0;
+}
+.case-testimonial figcaption {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+
+/* ============================================================
+   V3 FINAL: THINKING PAGE
+============================================================ */
+.thinking-page { padding-top: 0; }
+
+.thinking-index { padding: 96px 0; }
+@media (min-width: 1024px) {
+  .thinking-index { padding: 144px 0; }
+}
+
+.thinking-index h1 {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.0;
+  margin: 16px 0 64px;
+  max-width: 18ch;
+}
+
+.thinking-entry {
+  border-top: 1px solid var(--rule);
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+}
+.thinking-status {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.thinking-title {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--fg);
+  margin: 0;
+  max-width: 28ch;
+}
+.thinking-body {
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 65ch;
+  margin-top: 8px;
+}

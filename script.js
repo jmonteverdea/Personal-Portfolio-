@@ -131,10 +131,36 @@
   }
 
   /* ----------------------------------------------------------
+     V3 FINAL: Lazy-load case videos
+     Native <video preload="none"> handles most of this. The JS
+     swap from data-lazy-src to src guarantees no network until
+     the video is within 200px of the viewport.
+  ---------------------------------------------------------- */
+  function bindLazyVideos() {
+    const videos = document.querySelectorAll('.case-video-el[data-lazy-src]');
+    if (!videos.length) return;
+    if (!('IntersectionObserver' in window)) {
+      videos.forEach((v) => { v.src = v.getAttribute('data-lazy-src'); });
+      return;
+    }
+    const obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          const v = entry.target;
+          if (!v.src) v.src = v.getAttribute('data-lazy-src');
+          obs.unobserve(v);
+        }
+      });
+    }, { rootMargin: '200px 0px' });
+    videos.forEach((v) => obs.observe(v));
+  }
+
+  /* ----------------------------------------------------------
      Init
   ---------------------------------------------------------- */
   function init() {
     buildDotGrid();
+    bindLazyVideos();
     bindObservers();
   }
 
