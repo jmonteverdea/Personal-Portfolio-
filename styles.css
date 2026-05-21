@@ -825,7 +825,10 @@ p { max-width: 65ch; }
   .work-index-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
 }
 @media (min-width: 1024px) {
-  .work-index-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .work-index-grid { grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .index-card { padding: 24px 20px; }
+  .index-title { font-size: 18px; line-height: 1.2; }
+  .index-blurb { font-size: 13px; line-height: 1.5; }
 }
 
 .index-card {
