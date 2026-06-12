@@ -1,8 +1,10 @@
 /* ============================================================
-   script.js
+   script.js — Field Report design system
+   - Hero headline word-level staggered reveal
    - Generates the 200-dot solar SVG grid
    - Animates number counters on viewport entry
-   - Subtle fade-in on scroll
+   - Scroll-triggered reveals with per-group stagger
+   - Header hide-on-scroll + scroll progress bar
    - Respects prefers-reduced-motion
 ============================================================ */
 
@@ -10,7 +12,51 @@
   'use strict';
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  /* ----------------------------------------------------------
+     Hero headline: split words into spans for staggered reveal.
+     The closing phrase ("I close that gap.") gets the editorial
+     serif treatment. Text content is untouched.
+  ---------------------------------------------------------- */
+  function splitHeroTitle() {
+    const title = document.querySelector('.hero-title');
+    if (!title || reduceMotion) return;
+
+    const text = title.textContent.trim().replace(/\s+/g, ' ');
+    const words = text.split(' ');
+    const accentStart = words.length - 4; // "I close that gap."
+
+    title.textContent = '';
+    title.classList.remove('fade-in');
+
+    words.forEach(function (word, i) {
+      const span = document.createElement('span');
+      span.className = i >= accentStart ? 'w w-accent' : 'w';
+      span.style.setProperty('--wd', (140 + i * 50) + 'ms');
+      span.textContent = word;
+      title.appendChild(span);
+      if (i < words.length - 1) title.appendChild(document.createTextNode(' '));
+    });
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        title.classList.add('words-in');
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Serif accent on the work-index heading parenthetical.
+     Visual only; words unchanged.
+  ---------------------------------------------------------- */
+  function styleIndexHeading() {
+    const h2 = document.getElementById('work-index-heading');
+    if (!h2) return;
+    h2.innerHTML = h2.innerHTML.replace(
+      '(and the receipts)',
+      '<span class="serif-accent">(and the receipts)</span>'
+    );
+  }
 
   /* ----------------------------------------------------------
      Build the 200-dot grid for the Solar case study
@@ -37,8 +83,8 @@
       const cx = cellW / 2 + col * cellW;
       const cy = cellH / 2 + row * cellH;
       const isResidential = i < residentialCount;
-      const fill = isResidential ? '#D7E864' : '#AAB4AA';
-      html += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r}" fill="${fill}" style="transition-delay:${(i * 6).toFixed(0)}ms"/>`;
+      const fill = isResidential ? '#D7E864' : '#9FAC9F';
+      html += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r}" fill="${fill}" style="transition-delay:${(i * 5).toFixed(0)}ms"/>`;
     }
     host.innerHTML = html;
   }
@@ -71,6 +117,37 @@
   }
 
   /* ----------------------------------------------------------
+     Reveal choreography:
+     - auto-apply .fade-in to case blocks so every section
+       participates in the scroll rhythm
+     - set per-sibling stagger delays (--d) within groups
+  ---------------------------------------------------------- */
+  function prepareReveals() {
+    if (reduceMotion) return;
+
+    document
+      .querySelectorAll('.case-body .case-block, .case-meta, .case-bignum, .footer-block')
+      .forEach(function (el) { el.classList.add('fade-in'); });
+
+    const groups = document.querySelectorAll(
+      '.stat-tiles, .work-index-grid, .stat-strip, .cred-grid, .hero-ctas, .footer-inner'
+    );
+    groups.forEach(function (group) {
+      Array.prototype.forEach.call(group.children, function (child, i) {
+        child.style.setProperty('--d', (i * 70) + 'ms');
+      });
+    });
+
+    // Orchestrated hero entrance
+    const heroSeq = document.querySelectorAll(
+      '.hero .eyebrow, .hero .hero-status, .hero .hero-prop, .hero .hero-ctas, .hero .stat-tile'
+    );
+    heroSeq.forEach(function (el, i) {
+      el.style.setProperty('--d', (i * 90) + 'ms');
+    });
+  }
+
+  /* ----------------------------------------------------------
      IntersectionObserver: fade-in + counters + dot grid reveal
   ---------------------------------------------------------- */
   function bindObservers() {
@@ -86,6 +163,37 @@
         });
       }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
       fadeEls.forEach((el) => fadeObs.observe(el));
+
+      // Safety net: anchor landings, back/forward scroll restoration,
+      // and fast programmatic jumps can leave revealed-on-scroll
+      // elements stranded above the viewport, or strand the visitor
+      // mid-page waiting out the fade. Sweep those in instantly.
+      const sweep = function (includeViewport) {
+        fadeEls.forEach(function (el) {
+          if (el.classList.contains('is-visible')) return;
+          const r = el.getBoundingClientRect();
+          const above = r.bottom < 0;
+          const inView = r.top < window.innerHeight && r.bottom > 0;
+          if (above || (includeViewport && inView)) {
+            el.classList.add('no-anim', 'is-visible');
+            fadeObs.unobserve(el);
+          }
+        });
+      };
+      let prevY = window.scrollY;
+      window.addEventListener('scroll', function () {
+        const y = window.scrollY;
+        // A jump bigger than a viewport is a teleport (anchor load,
+        // scroll restoration), not human scrolling: reveal instantly.
+        sweep(Math.abs(y - prevY) > window.innerHeight);
+        prevY = y;
+      }, { passive: true });
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          if (window.scrollY > 100) sweep(true);
+        }, 60);
+      });
+      if (window.scrollY > 100) sweep(true);
     } else {
       fadeEls.forEach((el) => el.classList.add('is-visible'));
     }
@@ -131,7 +239,49 @@
   }
 
   /* ----------------------------------------------------------
-     V3 FINAL: Lazy-load case videos
+     Header: hide on scroll down, reveal on scroll up.
+     Scroll progress bar driven by --progress.
+  ---------------------------------------------------------- */
+  function bindHeaderAndProgress() {
+    const header = document.querySelector('.site-header');
+    const progress = document.querySelector('.scroll-progress');
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    function update() {
+      const y = window.scrollY;
+
+      if (header && !reduceMotion) {
+        if (y > 480 && y > lastY + 4) {
+          header.classList.add('is-hidden');
+        } else if (y < lastY - 4 || y <= 480) {
+          header.classList.remove('is-hidden');
+        }
+      }
+
+      if (progress) {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - window.innerHeight;
+        const p = max > 0 ? Math.min(1, y / max) : 0;
+        progress.style.setProperty('--progress', p.toFixed(4));
+      }
+
+      lastY = y;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }, { passive: true });
+
+    update();
+  }
+
+  /* ----------------------------------------------------------
+     Lazy-load case videos
      Native <video preload="none"> handles most of this. The JS
      swap from data-lazy-src to src guarantees no network until
      the video is within 200px of the viewport.
@@ -159,9 +309,13 @@
      Init
   ---------------------------------------------------------- */
   function init() {
+    splitHeroTitle();
+    styleIndexHeading();
     buildDotGrid();
     bindLazyVideos();
+    prepareReveals();
     bindObservers();
+    bindHeaderAndProgress();
   }
 
   if (document.readyState === 'loading') {
