@@ -138,6 +138,11 @@
     document.addEventListener('visibilitychange', function () {
       document.hidden ? stop() : play();
     });
+    canvas.addEventListener('webglcontextlost', function (e) {
+      e.preventDefault();
+      stop();
+      canvas.classList.remove('on');
+    });
   }
 
   /* ----------------------------------------------------------
@@ -146,8 +151,10 @@
      serif treatment. Text content is untouched.
   ---------------------------------------------------------- */
   function splitHeroTitle() {
+    // Runs under reduced motion too: the serif accent phrase is part
+    // of the design, not the animation. CSS shows words statically.
     const title = document.querySelector('.hero-title');
-    if (!title || reduceMotion) return;
+    if (!title) return;
 
     const text = title.textContent.trim().replace(/\s+/g, ' ');
     const words = text.split(' ');
@@ -319,11 +326,16 @@
     let ticking = false;
     function apply() {
       const vh = window.innerHeight;
+      // Batch: read all rects first, then write all transforms.
+      const writes = [];
       targets.forEach(function (img) {
         const r = img.getBoundingClientRect();
         if (r.bottom < -80 || r.top > vh + 80) return;
         const progress = (r.top + r.height / 2 - vh / 2) / vh;
-        img.style.transform = 'translateY(' + (progress * -26).toFixed(1) + 'px)';
+        writes.push([img, (progress * -26).toFixed(1)]);
+      });
+      writes.forEach(function (w) {
+        w[0].style.transform = 'translateY(' + w[1] + 'px)';
       });
       ticking = false;
     }
@@ -523,8 +535,14 @@
   function bindHeaderAndProgress() {
     const header = document.querySelector('.site-header');
     const progress = document.querySelector('.scroll-progress');
+    const heroInner = document.querySelector('.hero .container');
+    const hero = document.querySelector('.hero');
     let lastY = window.scrollY;
     let ticking = false;
+    let heroH = hero ? hero.offsetHeight : 0;
+    window.addEventListener('resize', function () {
+      heroH = hero ? hero.offsetHeight : 0;
+    }, { passive: true });
 
     function update() {
       const y = window.scrollY;
@@ -542,6 +560,14 @@
         const max = doc.scrollHeight - window.innerHeight;
         const p = max > 0 ? Math.min(1, y / max) : 0;
         progress.style.setProperty('--progress', p.toFixed(4));
+      }
+
+      // Cinematic exit: hero content recedes slower than the scroll
+      // and dims slightly, like a camera pulling away.
+      if (heroInner && heroH && !reduceMotion && y < heroH) {
+        const t = y / heroH;
+        heroInner.style.transform = 'translate3d(0,' + (y * 0.16).toFixed(1) + 'px,0)';
+        heroInner.style.opacity = (1 - t * 0.5).toFixed(3);
       }
 
       lastY = y;

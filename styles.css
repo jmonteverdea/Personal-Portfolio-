@@ -1277,7 +1277,7 @@ html:not(.js) .pov-mark {
   .stat-strip { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 1024px) {
-  .stat-strip { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px 24px; }
+  .stat-strip { grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 32px 24px; }
 }
 .strip-num { white-space: nowrap; }
 .strip-num .stat-cur { vertical-align: 0.12em; }
@@ -1772,7 +1772,7 @@ html:not(.js) .pov-mark {
 .js .fade-in {
   opacity: 0;
   transform: translateY(28px);
-  filter: blur(8px);
+  filter: blur(6px);
   transition:
     opacity 850ms var(--ease-out),
     transform 850ms var(--ease-out),
