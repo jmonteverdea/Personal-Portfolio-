@@ -232,6 +232,7 @@ p { max-width: 65ch; }
   font-weight: 560;
   letter-spacing: 0.005em;
   border-radius: 999px;
+  transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
   transition:
     transform 220ms var(--ease-out),
     background 220ms ease,
@@ -251,7 +252,7 @@ p { max-width: 65ch; }
 }
 .btn-primary:hover {
   background: var(--accent-soft);
-  transform: translateY(-2px);
+  transform: translate3d(var(--mx, 0px), calc(var(--my, 0px) - 2px), 0);
   box-shadow: 0 10px 32px -8px var(--glow);
 }
 .btn-primary:hover svg { transform: translateX(3px); }
@@ -266,7 +267,7 @@ p { max-width: 65ch; }
 .btn-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
-  transform: translateY(-2px);
+  transform: translate3d(var(--mx, 0px), calc(var(--my, 0px) - 2px), 0);
 }
 .btn-secondary:hover svg { transform: translateX(3px); }
 .btn-secondary[download]:hover svg { transform: translateY(2px); }
@@ -388,13 +389,18 @@ p { max-width: 65ch; }
   border-radius: 999px;
   font-size: 13px;
   font-weight: 620 !important;
+  transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
   transition: background 180ms ease, box-shadow 220ms ease, transform 220ms var(--ease-out);
 }
 .header-cta:hover {
   background: var(--accent-soft);
   box-shadow: 0 6px 24px -6px var(--glow);
-  transform: translateY(-1px);
+  transform: translate3d(var(--mx, 0px), calc(var(--my, 0px) - 1px), 0);
 }
+
+/* Scrollspy: current section's nav link */
+.header-nav a:not(.header-cta).active { color: var(--fg); }
+.header-nav a:not(.header-cta).active::after { right: 0; }
 
 @media (max-width: 720px) {
   .header-nav a:not(.header-cta) { display: none; }
@@ -790,6 +796,19 @@ p { max-width: 65ch; }
   max-width: 30ch;
 }
 
+/* The closing line draws its own underline when it enters view */
+.pov-mark {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 0 94%;
+  transition: background-size 1100ms var(--ease-out) 500ms;
+}
+.about-block.is-visible .pov-mark,
+html:not(.js) .pov-mark {
+  background-size: 100% 2px;
+}
+
 .about-cta { align-self: flex-start; }
 
 .prose p {
@@ -868,14 +887,30 @@ p { max-width: 65ch; }
   border: 1px solid var(--rule);
   border-radius: 10px;
   background: var(--bg-card);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(0);
   transition:
-    transform 260ms var(--ease-out),
+    transform 320ms var(--ease-out),
     border-color 260ms ease,
     box-shadow 260ms ease,
     background 260ms ease;
   text-decoration: none;
   color: var(--fg);
   overflow: hidden;
+  will-change: transform;
+}
+/* Pointer-tracked glare sheen */
+.index-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    380px circle at var(--gx, 50%) var(--gy, 0%),
+    rgba(215, 232, 100, 0.08),
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
 }
 .index-card::after {
   content: "";
@@ -888,11 +923,12 @@ p { max-width: 65ch; }
   transition: right 360ms var(--ease-out);
 }
 .index-card:hover {
-  transform: translateY(-4px);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px);
   border-color: rgba(215, 232, 100, 0.4);
   background: var(--bg-elevated);
-  box-shadow: 0 20px 48px -20px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 24px 56px -20px rgba(0, 0, 0, 0.6);
 }
+.index-card:hover::before { opacity: 1; }
 .index-card:hover::after { right: 0; }
 
 .index-num {
@@ -1093,7 +1129,8 @@ p { max-width: 65ch; }
   line-height: 1.6;
 }
 
-/* Funnel "7 -> 3" treatment for TRCA */
+/* Funnel "7 -> 3" treatment for TRCA: the arrow draws itself and
+   the shortlist number lands with a glow once the block is in view. */
 .bignum.funnel {
   display: inline-flex;
   align-items: center;
@@ -1106,6 +1143,22 @@ p { max-width: 65ch; }
   text-shadow: none;
 }
 .funnel-arrow { color: var(--muted); }
+.js .funnel-arrow path {
+  stroke-dasharray: 42;
+  stroke-dashoffset: 42;
+  transition: stroke-dashoffset 700ms var(--ease-out) 500ms;
+}
+.js .case-bignum.is-visible .funnel-arrow path { stroke-dashoffset: 0; }
+.js .bignum.funnel .accent-3 {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 500ms var(--ease-out) 1100ms, transform 500ms var(--ease-out) 1100ms;
+  display: inline-block;
+}
+.js .case-bignum.is-visible .accent-3 {
+  opacity: 1;
+  transform: scale(1);
+}
 
 /* Case body */
 .case-body {
@@ -1119,6 +1172,7 @@ p { max-width: 65ch; }
   flex-direction: column;
   gap: 12px;
 }
+.case-block .btn { align-self: flex-start; }
 .case-block p { color: var(--fg-soft); max-width: 62ch; }
 .case-block > .case-label + p { font-size: 16px; line-height: 1.7; }
 
@@ -1245,7 +1299,10 @@ p { max-width: 65ch; }
   height: 2px;
   background: var(--accent);
   opacity: 0.7;
+  transition: width 600ms var(--ease-out) calc(300ms + var(--d, 0ms));
 }
+.js .case-block.fade-in .strip-item::before { width: 0; }
+.js .case-block.fade-in.is-visible .strip-item::before { width: 24px; }
 .strip-num {
   font-size: clamp(24px, 2.4vw, 32px);
   font-weight: 720;
@@ -1313,10 +1370,10 @@ p { max-width: 65ch; }
   box-shadow:
     0 40px 90px -24px rgba(0, 0, 0, 0.65),
     0 10px 28px -10px rgba(0, 0, 0, 0.45);
-  transition: transform 400ms var(--ease-out), box-shadow 400ms ease;
+  transition: box-shadow 400ms ease;
+  will-change: transform;
 }
 .case-hero-image img:hover {
-  transform: translateY(-4px) rotate(-0.5deg);
   box-shadow:
     0 52px 110px -24px rgba(0, 0, 0, 0.7),
     0 14px 32px -10px rgba(0, 0, 0, 0.5);
@@ -1677,6 +1734,37 @@ p { max-width: 65ch; }
 
 
 /* ============================================================
+   CURSOR LIGHT (desktop, fine pointers; element added by JS)
+============================================================ */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle, rgba(215, 232, 100, 0.05), transparent 62%);
+  transform: translate3d(-600px, -600px, 0);
+}
+
+
+/* ============================================================
+   CROSS-PAGE TRANSITIONS (progressive; Chromium MPA)
+============================================================ */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* ============================================================
    MOTION SYSTEM
 ============================================================ */
 /* Reveal styles only apply when JS is present (html.js),
@@ -1704,6 +1792,14 @@ p { max-width: 65ch; }
   .hero-status-dot { animation: none; }
   .dot-grid circle { transition: none; transform: none; opacity: 1; }
   .grain { display: none; }
+  .hero-canvas { display: none; }
+  .cursor-glow { display: none; }
+  .js .funnel-arrow path { stroke-dashoffset: 0; transition: none; }
+  .js .bignum.funnel .accent-3 { opacity: 1; transform: none; transition: none; }
+  .pov-mark { background-size: 100% 2px; transition: none; }
+  .js .case-block.fade-in .strip-item::before { width: 24px; transition: none; }
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
 }
 
 

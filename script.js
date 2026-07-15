@@ -186,6 +186,154 @@
   }
 
   /* ----------------------------------------------------------
+     Thesis underline: the closing line of the POV statement
+     gets a drawn underline when the block scrolls into view.
+  ---------------------------------------------------------- */
+  function markPovClose() {
+    const pov = document.querySelector('.about-pov');
+    if (!pov) return;
+    pov.innerHTML = pov.innerHTML.replace(
+      'That gap is where I live.',
+      '<span class="pov-mark">That gap is where I live.</span>'
+    );
+  }
+
+  /* ----------------------------------------------------------
+     3D tilt on index cards. Pointer-tracked perspective with a
+     glare sheen. Fine pointers only; never on touch.
+  ---------------------------------------------------------- */
+  function initTilt() {
+    if (reduceMotion) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    document.querySelectorAll('.index-card').forEach(function (card) {
+      card.addEventListener('pointermove', function (e) {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width;
+        const py = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--rx', ((0.5 - py) * 7).toFixed(2) + 'deg');
+        card.style.setProperty('--ry', ((px - 0.5) * 9).toFixed(2) + 'deg');
+        card.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+        card.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+      });
+      card.addEventListener('pointerleave', function () {
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Magnetic pull on primary CTAs. Small, spring-back, fine
+     pointers only.
+  ---------------------------------------------------------- */
+  function initMagnetic() {
+    if (reduceMotion) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    document.querySelectorAll('.btn-primary, .header-cta').forEach(function (btn) {
+      btn.addEventListener('pointermove', function (e) {
+        const r = btn.getBoundingClientRect();
+        const dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+        const dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+        btn.style.setProperty('--mx', (dx * 4).toFixed(1) + 'px');
+        btn.style.setProperty('--my', (dy * 3).toFixed(1) + 'px');
+      });
+      btn.addEventListener('pointerleave', function () {
+        btn.style.setProperty('--mx', '0px');
+        btn.style.setProperty('--my', '0px');
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Cursor light: a faint solar glow that follows the pointer.
+     Desktop only, blend-mode screen, imperceptibly low alpha.
+  ---------------------------------------------------------- */
+  function initCursorGlow() {
+    if (reduceMotion) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    const glow = document.createElement('div');
+    glow.className = 'cursor-glow';
+    glow.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(glow);
+    let gx = -600, gy = -600, tx = gx, ty = gy, live = false;
+    window.addEventListener('pointermove', function (e) {
+      tx = e.clientX; ty = e.clientY;
+      if (!live) { live = true; requestAnimationFrame(step); }
+    }, { passive: true });
+    function step() {
+      gx += (tx - gx) * 0.12;
+      gy += (ty - gy) * 0.12;
+      glow.style.transform = 'translate3d(' + (gx - 240) + 'px,' + (gy - 240) + 'px,0)';
+      if (Math.abs(tx - gx) + Math.abs(ty - gy) > 0.5) {
+        requestAnimationFrame(step);
+      } else {
+        live = false;
+      }
+    }
+  }
+
+  /* ----------------------------------------------------------
+     Scrollspy: mark the nav link for the section in view.
+  ---------------------------------------------------------- */
+  function initScrollSpy() {
+    const map = [
+      ['about', 'a[href="#about"]'],
+      ['work', 'a[href="#work"]'],
+      ['credentials', 'a[href="#credentials"]']
+    ];
+    if (!('IntersectionObserver' in window)) return;
+    const links = {};
+    map.forEach(function (m) {
+      const el = document.getElementById(m[0]);
+      const link = document.querySelector('.header-nav ' + m[1]);
+      if (el && link) links[m[0]] = link;
+    });
+    if (!Object.keys(links).length) return;
+    const spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        const link = links[en.target.id];
+        if (!link) return;
+        if (en.isIntersecting) {
+          Object.keys(links).forEach(function (k) { links[k].classList.remove('active'); });
+          link.classList.add('active');
+        } else if (link.classList.contains('active') && !en.isIntersecting) {
+          link.classList.remove('active');
+        }
+      });
+    }, { rootMargin: '-35% 0px -55% 0px' });
+    Object.keys(links).forEach(function (id) {
+      spy.observe(document.getElementById(id));
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Scroll parallax for case artifact images (guide cover,
+     field photo). Transform-only, shared rAF, gentle.
+  ---------------------------------------------------------- */
+  function initParallax() {
+    if (reduceMotion) return;
+    const targets = Array.prototype.slice.call(
+      document.querySelectorAll('.case-hero-image img')
+    );
+    if (!targets.length) return;
+    let ticking = false;
+    function apply() {
+      const vh = window.innerHeight;
+      targets.forEach(function (img) {
+        const r = img.getBoundingClientRect();
+        if (r.bottom < -80 || r.top > vh + 80) return;
+        const progress = (r.top + r.height / 2 - vh / 2) / vh;
+        img.style.transform = 'translateY(' + (progress * -26).toFixed(1) + 'px)';
+      });
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+    apply();
+  }
+
+  /* ----------------------------------------------------------
      Build the 200-dot grid for the Solar case study
   ---------------------------------------------------------- */
   function buildDotGrid() {
@@ -211,7 +359,10 @@
       const cy = cellH / 2 + row * cellH;
       const isResidential = i < residentialCount;
       const fill = isResidential ? '#D7E864' : '#9FAC9F';
-      html += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r}" fill="${fill}" style="transition-delay:${(i * 5).toFixed(0)}ms"/>`;
+      // Ignition wave: dots light up radially from the first panel,
+      // like a plant coming online row by row.
+      const delay = Math.hypot(col, row * 2) * 32;
+      html += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${r}" fill="${fill}" style="transition-delay:${delay.toFixed(0)}ms"/>`;
     }
     host.innerHTML = html;
   }
@@ -439,11 +590,17 @@
     initHeroField();
     splitHeroTitle();
     styleIndexHeading();
+    markPovClose();
     buildDotGrid();
     bindLazyVideos();
     prepareReveals();
     bindObservers();
     bindHeaderAndProgress();
+    initTilt();
+    initMagnetic();
+    initCursorGlow();
+    initScrollSpy();
+    initParallax();
   }
 
   if (document.readyState === 'loading') {
