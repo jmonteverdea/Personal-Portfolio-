@@ -14,6 +14,133 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ----------------------------------------------------------
+     WebGL energy field for the hero.
+     A single full-screen quad running a flowing-contour shader:
+     topographic lines drifting like heat over terrain, in the
+     site's lime on deep green. Hand-written, no dependencies.
+     DPR capped, paused offscreen, skipped on reduced motion.
+  ---------------------------------------------------------- */
+  function initHeroField() {
+    if (reduceMotion) return;
+    const canvas = document.querySelector('.hero-canvas');
+    const hero = document.querySelector('.hero');
+    if (!canvas || !hero) return;
+
+    const gl = canvas.getContext('webgl', {
+      alpha: true,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      powerPreference: 'low-power'
+    });
+    if (!gl) return;
+
+    const VERT = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+    const FRAG = [
+      'precision mediump float;',
+      'uniform vec2 u_res;',
+      'uniform float u_t;',
+      'uniform vec2 u_m;',
+      'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}',
+      'float n(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.-2.*f);',
+      ' return mix(mix(h(i),h(i+vec2(1.,0.)),u.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),u.x),u.y);}',
+      'float fbm(vec2 p){float v=0.;float a=.5;',
+      ' for(int i=0;i<4;i++){v+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}',
+      'void main(){',
+      ' vec2 uv=gl_FragCoord.xy/u_res.xy;',
+      ' vec2 p=uv;p.x*=u_res.x/u_res.y;',
+      ' vec2 drift=vec2(u_t*.012,-u_t*.008)+(u_m-.5)*.06;',
+      ' float e=fbm(p*1.9+drift+fbm(p*3.1-drift)*.35);',
+      ' float bands=fract(e*7.-u_t*.05);',
+      ' float line=smoothstep(.5,.485,abs(bands-.5))* (1.-smoothstep(.485,.5,abs(bands-.5)));',
+      ' line=smoothstep(.0,.9,1.-abs(bands-.5)*13.);',
+      ' float topRight=smoothstep(.15,1.,uv.x)*smoothstep(.05,.95,uv.y);',
+      ' float vign=smoothstep(1.25,.35,distance(uv,vec2(.72,.78)));',
+      ' float a=line*(.05+.13*topRight)*vign;',
+      ' float glow=smoothstep(.55,.0,distance(uv,vec2(.82+.03*sin(u_t*.1),.86)))*.05;',
+      ' vec3 lime=vec3(.843,.910,.392);',
+      ' gl_FragColor=vec4(lime,a+glow);',
+      '}'
+    ].join('\n');
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) return null;
+      return s;
+    }
+    const vs = compile(gl.VERTEX_SHADER, VERT);
+    const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+    if (!vs || !fs) return;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    const uRes = gl.getUniformLocation(prog, 'u_res');
+    const uT = gl.getUniformLocation(prog, 'u_t');
+    const uM = gl.getUniformLocation(prog, 'u_m');
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    let mx = 0.5, my = 0.5, tmx = 0.5, tmy = 0.5;
+    hero.addEventListener('pointermove', function (e) {
+      const r = hero.getBoundingClientRect();
+      tmx = (e.clientX - r.left) / r.width;
+      tmy = 1 - (e.clientY - r.top) / r.height;
+    }, { passive: true });
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const w = hero.clientWidth, hgt = hero.clientHeight;
+      if (canvas.width !== (w * dpr | 0) || canvas.height !== (hgt * dpr | 0)) {
+        canvas.width = w * dpr | 0;
+        canvas.height = hgt * dpr | 0;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+    }
+    window.addEventListener('resize', resize, { passive: true });
+    resize();
+
+    let running = false, raf = 0, started = false;
+    const t0 = performance.now();
+    function frame(now) {
+      if (!running) return;
+      mx += (tmx - mx) * 0.04;
+      my += (tmy - my) * 0.04;
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+      gl.uniform1f(uT, (now - t0) / 1000);
+      gl.uniform2f(uM, mx, my);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (!started) { started = true; canvas.classList.add('on'); }
+      raf = requestAnimationFrame(frame);
+    }
+    function play() { if (!running) { running = true; raf = requestAnimationFrame(frame); } }
+    function stop() { running = false; cancelAnimationFrame(raf); }
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { en.isIntersecting ? play() : stop(); });
+      }, { rootMargin: '80px 0px' }).observe(hero);
+    } else {
+      play();
+    }
+    document.addEventListener('visibilitychange', function () {
+      document.hidden ? stop() : play();
+    });
+  }
+
+  /* ----------------------------------------------------------
      Hero headline: split words into spans for staggered reveal.
      The closing phrase ("I close that gap.") gets the editorial
      serif treatment. Text content is untouched.
@@ -309,6 +436,7 @@
      Init
   ---------------------------------------------------------- */
   function init() {
+    initHeroField();
     splitHeroTitle();
     styleIndexHeading();
     buildDotGrid();

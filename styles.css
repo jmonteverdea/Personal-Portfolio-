@@ -439,7 +439,21 @@ p { max-width: 65ch; }
   pointer-events: none;
   background: radial-gradient(closest-side, rgba(215, 232, 100, 0.09), transparent 70%);
 }
-.hero .container { position: relative; z-index: 1; }
+.hero .container { position: relative; z-index: 2; }
+
+/* WebGL energy field (initialized by JS; sits above the CSS grid,
+   below content). Fades in once the first frame is ready. */
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 1600ms ease;
+  pointer-events: none;
+}
+.hero-canvas.on { opacity: 1; }
 
 .hero-status {
   display: inline-flex;
@@ -577,6 +591,16 @@ p { max-width: 65ch; }
   color: var(--accent);
   letter-spacing: -0.04em;
   line-height: 1;
+  white-space: nowrap;
+}
+
+/* Currency prefix: smaller, keeps big numbers on one baseline */
+.stat-cur {
+  font-size: 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: 0.18em;
+  margin-right: 0.06em;
 }
 
 .stat-label {
@@ -779,9 +803,10 @@ p { max-width: 65ch; }
 .about-block + .about-block::before {
   content: "";
   display: block;
-  width: 64px;
+  width: 88px;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: var(--accent);
+  opacity: 0.85;
   margin-bottom: 36px;
 }
 
@@ -792,10 +817,10 @@ p { max-width: 65ch; }
 .work-index {
   position: relative;
   background: var(--bg-2);
-  padding-bottom: 100px;
+  padding-bottom: 88px;
   overflow: hidden;
 }
-@media (min-width: 1024px) { .work-index { padding-bottom: 150px; } }
+@media (min-width: 1024px) { .work-index { padding-bottom: 112px; } }
 .work-index::before {
   content: "";
   position: absolute;
@@ -1049,6 +1074,14 @@ p { max-width: 65ch; }
   color: var(--accent);
   text-shadow: 0 0 64px rgba(215, 232, 100, 0.16);
 }
+.bignum .stat-cur {
+  display: block;
+  font-size: 0.3em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.12em;
+  vertical-align: baseline;
+}
 .bignum-label {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -1190,8 +1223,10 @@ p { max-width: 65ch; }
   .stat-strip { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 1024px) {
-  .stat-strip { grid-template-columns: repeat(4, 1fr); gap: 32px 24px; }
+  .stat-strip { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 32px 24px; }
 }
+.strip-num { white-space: nowrap; }
+.strip-num .stat-cur { vertical-align: 0.12em; }
 
 .strip-item {
   display: flex;
