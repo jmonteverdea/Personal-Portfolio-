@@ -647,72 +647,231 @@ p { max-width: 65ch; }
 
 
 /* ============================================================
-   ECO CANADA HIRING CALLOUT
+   CURRENT MANDATE (RentBC)
+   Technique unique to this section: a diagonal-hatch "brief"
+   panel with a left accent rail, a numbered scope ledger, and
+   partner chips. Deliberately not the case-study grid.
 ============================================================ */
-.eco-section {
-  padding: 28px 0 0;
+.mandate {
+  padding: 72px 0 0;
 }
-@media (min-width: 1024px) { .eco-section { padding: 40px 0 0; } }
+@media (min-width: 1024px) { .mandate { padding: 104px 0 0; } }
 
-.eco-callout {
+.mandate-panel {
   position: relative;
-  display: grid;
-  gap: 10px;
-  padding: 30px 34px;
-  border: 1px solid rgba(215, 232, 100, 0.32);
-  border-radius: 10px;
-  background:
-    radial-gradient(480px at 0% 0%, rgba(215, 232, 100, 0.08), transparent 70%),
-    linear-gradient(180deg, rgba(215, 232, 100, 0.05), rgba(215, 232, 100, 0.015));
-  max-width: 780px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 14px;
+  padding: 34px 26px 32px;
   overflow: hidden;
-  transition: border-color 260ms ease, box-shadow 260ms ease;
+  background:
+    radial-gradient(720px at 0% 0%, rgba(215, 232, 100, 0.07), transparent 66%),
+    var(--bg-card);
+  transition: border-color 320ms ease, box-shadow 320ms ease;
 }
-.eco-callout:hover {
-  border-color: rgba(215, 232, 100, 0.55);
-  box-shadow: 0 12px 48px -18px var(--glow);
+@media (min-width: 768px) {
+  .mandate-panel { padding: 44px 44px 40px; }
 }
-.eco-callout::before {
+.mandate-panel:hover {
+  border-color: rgba(215, 232, 100, 0.42);
+  box-shadow: 0 28px 80px -32px var(--glow);
+}
+/* Diagonal hatch: this surface appears nowhere else on the site */
+.mandate-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(242, 237, 227, 0.03) 0 1px,
+    transparent 1px 9px
+  );
+  -webkit-mask-image: radial-gradient(120% 100% at 100% 0%, #000 10%, transparent 72%);
+  mask-image: radial-gradient(120% 100% at 100% 0%, #000 10%, transparent 72%);
+}
+.mandate-panel::before {
   content: "";
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--accent), rgba(215, 232, 100, 0.2));
+  background: linear-gradient(180deg, var(--accent), rgba(215, 232, 100, 0.12));
+  z-index: 2;
 }
+.mandate-head,
+.mandate-body { position: relative; z-index: 1; }
 
-.eco-eyebrow {
+.mandate-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 540;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--accent);
-  margin: 0;
+  margin: 0 0 18px;
 }
 
-.eco-headline {
-  font-size: clamp(20px, 2.2vw, 27px);
-  font-weight: 720;
-  font-stretch: 106%;
-  letter-spacing: -0.018em;
+.mandate-org {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 540;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: var(--fg);
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  max-width: none;
+}
+.mandate-org-was {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.mandate-title {
+  font-size: clamp(26px, 3.4vw, 42px);
+  font-weight: 780;
+  font-stretch: 108%;
+  letter-spacing: -0.028em;
+  line-height: 1.08;
+  color: var(--fg);
+  margin: 10px 0 0;
+  max-width: 20ch;
+}
+
+.mandate-meta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 14px 0 0;
   max-width: none;
 }
 
-.eco-body {
-  font-size: 15px;
+.mandate-body {
+  margin-top: 30px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+}
+
+.mandate-statement {
+  font-size: clamp(17px, 1.9vw, 21px);
   line-height: 1.6;
+  font-weight: 460;
+  color: var(--fg);
+  letter-spacing: -0.008em;
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* Scope ledger */
+.scope-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 26px;
+  margin: 34px 0 0;
+}
+@media (min-width: 860px) {
+  .scope-list { grid-template-columns: repeat(3, 1fr); gap: 30px; }
+}
+.scope-item {
+  position: relative;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.scope-item::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 28px;
+  height: 2px;
+  background: var(--accent);
+  transition: width 620ms var(--ease-out) calc(320ms + var(--sd, 0ms));
+}
+.js .mandate-panel.fade-in .scope-item::before { width: 0; }
+.js .mandate-panel.fade-in.is-visible .scope-item::before { width: 28px; }
+.scope-num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 540;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.scope-title {
+  font-size: 17px;
+  font-weight: 700;
+  font-stretch: 104%;
+  letter-spacing: -0.012em;
+  color: var(--fg);
+  margin: 0 0 8px;
+}
+.scope-note {
+  font-size: 14.5px;
+  line-height: 1.62;
   color: var(--muted);
-  margin: 4px 0 0;
+  margin: 0;
+  max-width: 40ch;
+}
+
+/* Partner chips */
+.mandate-partners {
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rule);
+}
+.mandate-partners-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 540;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 16px;
   max-width: none;
 }
-.eco-body strong {
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--fg-soft);
+  padding: 8px 15px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  background: rgba(242, 237, 227, 0.02);
+  transition: color 240ms ease, border-color 240ms ease, transform 240ms var(--ease-out);
+}
+.chip:hover {
   color: var(--accent);
-  font-weight: 700;
-  font-feature-settings: var(--tnum);
+  border-color: rgba(215, 232, 100, 0.5);
+  transform: translateY(-2px);
+}
+
+.mandate-honesty {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 30px 0 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--rule-strong);
+  max-width: 56ch;
 }
 
 
@@ -1798,6 +1957,7 @@ html:not(.js) .pov-mark {
   .js .bignum.funnel .accent-3 { opacity: 1; transform: none; transition: none; }
   .pov-mark { background-size: 100% 2px; transition: none; }
   .js .case-block.fade-in .strip-item::before { width: 24px; transition: none; }
+  .js .mandate-panel.fade-in .scope-item::before { width: 28px; transition: none; }
   ::view-transition-old(root),
   ::view-transition-new(root) { animation: none; }
 }
@@ -1809,7 +1969,8 @@ html:not(.js) .pov-mark {
 @media (max-width: 720px) {
   .eyebrow { font-size: 10.5px; letter-spacing: 0.15em; }
   .eyebrow::after { width: 40px; }
-  .eco-callout { padding: 24px 22px; }
+  .mandate-meta { font-size: 11px; }
+  .mandate-honesty { font-size: 11.5px; }
   .case-testimonial { padding: 26px 22px 24px 48px; }
   .case-testimonial::before { font-size: 48px; left: 12px; top: 8px; }
   .case-outcome { font-size: 16px; }

@@ -284,6 +284,7 @@
   ---------------------------------------------------------- */
   function initScrollSpy() {
     const map = [
+      ['now', 'a[href="#now"]'],
       ['about', 'a[href="#about"]'],
       ['work', 'a[href="#work"]'],
       ['credentials', 'a[href="#credentials"]']
@@ -426,6 +427,11 @@
       Array.prototype.forEach.call(group.children, function (child, i) {
         child.style.setProperty('--d', (i * 70) + 'ms');
       });
+    });
+
+    // Scope ledger: accent ticks draw left to right, one after another.
+    document.querySelectorAll('.scope-list .scope-item').forEach(function (el, i) {
+      el.style.setProperty('--sd', (i * 130) + 'ms');
     });
 
     // Orchestrated hero entrance
