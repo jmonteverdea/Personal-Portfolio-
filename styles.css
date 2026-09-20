@@ -1020,10 +1020,10 @@ html:not(.js) .pov-mark {
   .work-index-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
 }
 @media (min-width: 1024px) {
-  .work-index-grid { grid-template-columns: repeat(5, 1fr); gap: 14px; }
-  .index-card { padding: 26px 20px; }
-  .index-title { font-size: 17px; line-height: 1.25; }
-  .index-blurb { font-size: 12.5px; line-height: 1.55; }
+  .work-index-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .index-card { padding: 26px 22px; }
+  .index-title { font-size: 18px; line-height: 1.25; }
+  .index-blurb { font-size: 13px; line-height: 1.55; }
 }
 
 .index-card {
@@ -1547,6 +1547,40 @@ html:not(.js) .pov-mark {
   border-right: 1.5px solid var(--accent);
 }
 
+
+/* ============================================================
+   CASE SCREENS (product screenshots, light UI on a dark page)
+============================================================ */
+.case-screens { gap: 20px; }
+.case-screens figure { margin: 0; }
+.screen-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--rule-strong);
+  background: #FAFBFB;
+  box-shadow: 0 28px 72px -24px rgba(0, 0, 0, 0.6);
+}
+.screen-shot figcaption {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin-top: 10px;
+  letter-spacing: 0.03em;
+  max-width: 60ch;
+}
+.screen-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 460px;
+}
+.screen-pair .screen-shot img { border-radius: 14px; }
+@media (max-width: 560px) {
+  .screen-pair { grid-template-columns: 1fr; max-width: 280px; }
+}
 
 /* ============================================================
    CASE VIDEO

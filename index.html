@@ -33,7 +33,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Spline+Sans+Mono:wght@300..700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=16" />
+  <link rel="stylesheet" href="styles.css?v=17" />
   <script>document.documentElement.classList.add('js');</script>
 
   <!-- Schema.org Person -->
@@ -80,6 +80,7 @@
         <a href="#now">Now</a>
         <a href="#about">About</a>
         <a href="#work">Work</a>
+        <a href="/thinking">Thinking</a>
         <a href="#credentials">Credentials</a>
         <a href="https://calendar.app.google/KkMvuES5q4RrvFVf6" class="header-cta" target="_blank" rel="noopener">Book a call</a>
       </nav>
@@ -259,36 +260,43 @@
 
         <div class="work-index-grid">
 
-          <a href="#case-granted-heading" class="index-card fade-in">
+          <a href="#case-navigator-heading" class="index-card fade-in">
             <span class="index-num">01</span>
+            <h3 class="index-title">RARA Retrofit Navigator</h3>
+            <p class="index-blurb">A self-serve retrofit screening tool for BC rental owners. Staged roadmap, incentive picture, one next step. Internal beta.</p>
+            <span class="index-link">Read case study &rarr;</span>
+          </a>
+
+          <a href="#case-granted-heading" class="index-card fade-in">
+            <span class="index-num">02</span>
             <h3 class="index-title">Granted Consulting</h3>
             <p class="index-blurb">CAD 200K+ in approved funding across 30 cleantech and natural-resource clients.</p>
             <span class="index-link">Read case study →</span>
           </a>
 
           <a href="#case-bright-heading" class="index-card fade-in">
-            <span class="index-num">02</span>
+            <span class="index-num">03</span>
             <h3 class="index-title">Bright Inc.</h3>
             <p class="index-blurb">3 MW of solar across 200+ sites in Mexico. Three promotions in four years.</p>
             <span class="index-link">Read case study →</span>
           </a>
 
           <a href="#case-cedes-heading" class="index-card fade-in">
-            <span class="index-num">03</span>
+            <span class="index-num">04</span>
             <h3 class="index-title">CEDES</h3>
             <p class="index-blurb">Mexico's first national household energy efficiency guide for extreme-heat climates. 150 inspectors trained.</p>
             <span class="index-link">Read case study →</span>
           </a>
 
           <a href="#case-trca-heading" class="index-card fade-in">
-            <span class="index-num">04</span>
+            <span class="index-num">05</span>
             <h3 class="index-title">TRCA</h3>
             <p class="index-blurb">Seven low-carbon pathways evaluated. Three shortlisted for action.</p>
             <span class="index-link">Read case study →</span>
           </a>
 
           <a href="#case-livelearn-heading" class="index-card fade-in">
-            <span class="index-num">05</span>
+            <span class="index-num">06</span>
             <h3 class="index-title">Live &amp; Learn International</h3>
             <p class="index-blurb">7 kW off-grid PV pilot for Pacific WASH infrastructure. AUD 500K continued donor funding.</p>
             <span class="index-link">Read case study →</span>
@@ -303,12 +311,97 @@
     ============================================================ -->
     <section id="work" class="section work" aria-label="Full case studies">
 
-      <!-- ============ CASE 01: GRANTED ============ -->
+      <!-- ============ CASE 01: RARA RETROFIT NAVIGATOR (RentBC) ============ -->
+      <article class="case" aria-labelledby="case-navigator-heading">
+        <div class="container case-grid">
+
+          <header class="case-meta">
+            <p class="case-index">01 / 06</p>
+            <p class="case-wordmark">RentBC. Rental Apartment Retrofit Accelerator</p>
+            <h3 id="case-navigator-heading" class="case-role">RARA Retrofit Navigator. Product spec, modelling logic, and build.</h3>
+            <p class="case-outcome">A rental owner answers six screens and gets a staged retrofit roadmap, an incentive picture, and one next step. Internal beta, not public.</p>
+          </header>
+
+          <div class="case-bignum">
+            <span class="bignum"><span class="num-target" data-count="33" data-suffix="">33</span></span>
+            <span class="bignum-label">retrofit measures screened, sequenced, and priced against 17 incentive programs.</span>
+          </div>
+
+          <div class="case-body">
+
+            <div class="case-block">
+              <p class="case-label">Challenge</p>
+              <p>A market rental owner in British Columbia who knows their building needs work faces a stack of overlapping programs: RARA, the CleanBC and BC Hydro MURB Retrofit Program, the BC Hydro Energy Advisor Program, a lighting pilot, municipal streams, federal financing. Each has its own eligibility tests, caps, stacking rules, and end dates. Most owners cannot tell which ones apply, what the work costs after incentives, or what to do first. Every first conversation starts with the same triage, by hand.</p>
+            </div>
+
+            <div class="case-block">
+              <p class="case-label">Approach</p>
+              <p>I wrote the product spec from the program rules and my own incentive research, then built it in three gates: design direction, calculation engine, interface. Six plain-language screens, with an "I'm not sure" option wherever an owner plausibly would not know. The engine benchmarks the building against its peers, splits energy use by end use, screens 33 measures, and sequences them into Now, Next, and Later under four rules: never replace gas with gas at end of life, reduce load before electrifying, bundle complementary work with a heating retrofit so it stays fundable, and warn when a program ends before the work would start.</p>
+            </div>
+
+            <div class="case-block">
+              <p class="case-label">The three things owners get wrong, built into the logic</p>
+              <ol class="promo-timeline">
+                <li><span class="promo-step">01</span><span class="promo-title">Tax is charged on the gross cost</span><span class="promo-note">GST applies before incentives, not after. On a $10,000 job with a $5,000 incentive you pay $5,500, not $5,250. The waterfall shows it as its own step.</span></li>
+                <li><span class="promo-step">02</span><span class="promo-title">Incentives do not simply add up</span><span class="promo-note">Each program has its own cap and its own anti-stacking rules. Every figure is a range: limited stacking at one end, full stacking at the other.</span></li>
+                <li><span class="promo-step">03</span><span class="promo-title">In-suite heat pumps move the bill to tenants</span><span class="promo-note">Central plant stays on the owner's meter. Every measure is flagged for whether it shifts heating cost to tenants, because in rental buildings that is the decision.</span></li>
+              </ol>
+            </div>
+
+            <div class="case-block case-screens">
+              <p class="case-label">Inside the beta</p>
+              <figure class="screen-shot">
+                <img src="/assets/images/navigator-glance.jpg" alt="The report's at-a-glance section: energy cost, energy use intensity, peer comparison and emissions, each with a confidence label, above a stacked bar showing where the energy money goes by end use." width="1400" height="910" loading="lazy" />
+                <figcaption>Every figure is a range carrying its own confidence label: Measured, Partly estimated, or Estimated.</figcaption>
+              </figure>
+              <figure class="screen-shot">
+                <img src="/assets/images/navigator-waterfall.jpg" alt="A stepped waterfall chart showing gross project cost, less incentives, plus GST charged on the gross cost, equalling what the owner pays, given for a low case and a high case." width="1400" height="755" loading="lazy" />
+                <figcaption>Two columns that each add up exactly, so the low and high cases are honest about which incentives they assume.</figcaption>
+              </figure>
+              <div class="screen-pair">
+                <figure class="screen-shot">
+                  <img src="/assets/images/navigator-phone-flow.jpg" alt="The tool on a phone, showing step 3 of 6, Energy systems, with dropdowns for space heating type and equipment age." width="780" height="1688" loading="lazy" />
+                </figure>
+                <figure class="screen-shot">
+                  <img src="/assets/images/navigator-phone-report.jpg" alt="The report on a phone, showing the building summary and the headline figure for what the owner could pay after incentives and GST." width="780" height="1688" loading="lazy" />
+                </figure>
+              </div>
+              <p class="case-video-caption">Screens show a <strong>fictional test building</strong>. A property manager opens this on a phone during a site visit, so it is built for 375px first.</p>
+            </div>
+
+            <div class="case-block">
+              <p class="case-label">Compliance is in the logic, not the disclaimer</p>
+              <p>The tool never names a contractor or a financing product, never promises a rebate amount or an eligibility outcome, never gives tenancy law advice, and never calls its own output an energy study. It collects no personal information: no name, no email, no address. Answers stay in the browser and say so on screen. One self-contained file, no backend, no analytics, no build step, so the team can open it and the program's own staff can edit the assumptions.</p>
+            </div>
+
+            <div class="case-block">
+              <p class="case-label">My role</p>
+              <p>Wrote the spec, defined the modelling and routing rules from program documents and my own research workbook, and ran the build through three review gates. Tested against five reference buildings and 118 automated checks covering the arithmetic, the compliance rules, and the plain-language rules.</p>
+            </div>
+
+            <div class="case-block">
+              <p class="case-label">Status</p>
+              <div class="stat-strip">
+                <div class="strip-item"><span class="strip-num">6</span><span class="strip-label">screens, under six minutes</span></div>
+                <div class="strip-item"><span class="strip-num">33</span><span class="strip-label">measures screened</span></div>
+                <div class="strip-item"><span class="strip-num">17</span><span class="strip-label">programs checked</span></div>
+                <div class="strip-item"><span class="strip-num">118</span><span class="strip-label">automated checks passing</span></div>
+                <div class="strip-item"><span class="strip-num">0</span><span class="strip-label">personal data collected</span></div>
+              </div>
+              <p>Internal beta for the RentBC Sustainability Team. It is not public, and it has not been through BC Hydro's review of public-facing material, so there are no delivery results to report yet.</p>
+            </div>
+
+          </div>
+
+        </div>
+      </article>
+
+      <!-- ============ CASE 02: GRANTED ============ -->
       <article class="case" aria-labelledby="case-granted-heading">
         <div class="container case-grid">
 
           <header class="case-meta">
-            <p class="case-index">01 / 05</p>
+            <p class="case-index">02 / 06</p>
             <p class="case-wordmark">Granted Consulting — Canada</p>
             <h3 id="case-granted-heading" class="case-role">Account Manager, Cleantech &amp; Natural Resources, Green Program Delivery</h3>
             <p class="case-outcome">CAD 200K+ approved for environment and decarbonization programs across 30 client roadmaps.</p>
@@ -359,7 +452,7 @@
         <div class="container case-grid">
 
           <header class="case-meta">
-            <p class="case-index">02 / 05</p>
+            <p class="case-index">03 / 06</p>
             <p class="case-wordmark">Bright Inc.</p>
             <h3 id="case-bright-heading" class="case-role">Renewable Energy Advisor → Regional Manager, Residential Solar → Partner Manager, Enterprise Solar</h3>
             <p class="case-outcome">3 MW across 200+ sites. The bottleneck was never demand. It was execution.</p>
@@ -443,7 +536,7 @@
         <div class="container case-grid">
 
           <header class="case-meta">
-            <p class="case-index">03 / 05</p>
+            <p class="case-index">04 / 06</p>
             <p class="case-wordmark">CEDES. Comisión de Ecología y Desarrollo Sustentable</p>
             <h3 id="case-cedes-heading" class="case-role">Project Director, Energy Efficiency</h3>
             <p class="case-outcome">Mexico's first national household energy efficiency guide for extreme-heat climates. 150 inspectors trained.</p>
@@ -508,7 +601,7 @@
         <div class="container case-grid">
 
           <header class="case-meta">
-            <p class="case-index">04 / 05</p>
+            <p class="case-index">05 / 06</p>
             <p class="case-wordmark">Toronto and Region Conservation Authority</p>
             <h3 id="case-trca-heading" class="case-role">Project Lead, Newcomer Youth Green Economy Project, with Footprint</h3>
             <p class="case-outcome">Seven low-carbon pathways evaluated. Three shortlisted for action.</p>
@@ -565,7 +658,7 @@
         <div class="container case-grid">
 
           <header class="case-meta">
-            <p class="case-index">05 / 05</p>
+            <p class="case-index">06 / 06</p>
             <p class="case-wordmark">Live &amp; Learn International</p>
             <h3 id="case-livelearn-heading" class="case-role">Project Officer. Climate adaptation and WASH delivery across the Pacific.</h3>
             <p class="case-outcome">7 kW off-grid PV pilot deployed. AUD 500K in continued donor funding secured.</p>
@@ -705,6 +798,6 @@
     </div>
   </footer>
 
-  <script src="script.js?v=16" defer></script>
+  <script src="script.js?v=17" defer></script>
 </body>
 </html>
