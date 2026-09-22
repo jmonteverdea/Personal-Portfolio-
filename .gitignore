@@ -26,3 +26,6 @@ portfolio-redesign/assets/images/favicon-source-face.png
 portfolio-redesign/assets/docs/README.md
 inspiration.png
 testimonials/
+
+# Generated knowledge graph (graphify). Build output, not source.
+graphify-out/

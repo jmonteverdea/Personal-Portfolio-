@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-09-20. RARA Retrofit Navigator case study.
+
+### Added
+- Case study 01: the RARA Retrofit Navigator, the self-serve retrofit screening tool built for the RentBC Sustainability Team. Challenge, approach, the three things the logic gets right that owners get wrong, my role, and status. No outcomes claimed: it is an internal beta and has not been through BC Hydro's review of public-facing material.
+- Four screenshots of the tool running on a fictional test building: the at-a-glance energy split, the cost waterfall, and two phone screens. New `.case-screens` block, with the phone pair stacking below 560px.
+- Homepage nav link to `/thinking`. The page linked back to the homepage but nothing linked to it, so it was unreachable from the front page.
+
+### Changed
+- Selected work renumbered from five cases to six. Work index grid goes from five columns to three on desktop, so six cards sit as two rows.
+- Cache key on `styles.css` and `script.js` bumped to `v=17`.
+
+### Not in this repo
+- The navigator itself and its open items list stay out of version control. The tool names BC Hydro and CleanBC programs, and BC Hydro reviews public-facing material before use. Both files are listed in `.git/info/exclude`; never run `git add -A` here.
+- `graphify-out/` (generated knowledge graph) is now git-ignored.
+
 ## 2026-05-13. Full rebuild from `portfolio-redesign/` spec.
 
 ### Replaced
