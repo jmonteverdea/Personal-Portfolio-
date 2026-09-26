@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-09-26. The Navigator becomes a member tool, reachable from the portfolio.
+
+### Added
+- `/navigator`: the RARA Retrofit Navigator, redesigned for RentBC members and opened with a member access code. A Navigator link sits in the header of both pages, and the case study has an "Open the Navigator" button.
+- `vercel.json` sends `X-Robots-Tag: noindex, nofollow` for the tool, on top of its own robots meta tag.
+
+### Changed
+- The tool itself: nine questions, one per screen, in three short chapters, most answered with one tap. Then one answer screen: the next step to take, what the first two years and the full plan could cost after incentives, and three places to start. The full verified report folds away under "See the full breakdown".
+- Case study copy and screenshots updated to the new interface. Stat strip now reads nine questions in about three minutes.
+
+### Fixed, from a three-lens review (member, accessibility, compliance) of the member build
+- "Will the equipment need replacing?" now asks which: heating, hot water or both. A failing boiler no longer pulls the hot water and an assumed make-up air unit into the first two years, which had shown about four times the near-term cost.
+- "Where to start" never lists equipment ahead of its own "do first" work.
+- "May qualify for incentives" appears only where modelled cash can reach that work in the first two years. Free services and financing no longer count as incentives. Buildings outside BC get no program claims, and the FortisBC program now needs gas that heats space, water or air.
+- Programs are listed in words, not by chip style: "You may qualify" and "Worth asking about", each linked with a one-line plain description. CMHC MLI Select is framed as financing.
+- Every number on the answer screen carries its confidence label. Tenant savings are shown beside the owner's. The step count excludes optional upgrades the plan price leaves out. A bill cost with no kWh or GJ now counts.
+- Questions the short flow never asks are reported as "we did not ask", and no longer lower the readiness score.
+- Accessibility: one pending auto-advance at a time and a short settle window, so a double tap cannot answer the next question; errors and hints are tied to their controls; the current chapter is marked by weight and underline, not colour alone; field borders, small sage text and the focus ring on navy meet contrast minimums; the page title names the current question.
+- Answers can be changed one at a time from the answer screen, which then returns straight to it. The answer carries a prepared date, the bills screen repeats the privacy line, and the approved program name (RARA™) stays visible on phones and in print.
+
+### Not in this repo
+- The tool's source, the access code, the old internal build and the open items list. The access code is stored in the page only as a hash; it is a speed bump for casual visitors, not security.
+
 ## 2026-09-20. RARA Retrofit Navigator case study.
 
 ### Added
