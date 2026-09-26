@@ -18,6 +18,7 @@
 - Every number on the answer screen carries its confidence label. Tenant savings are shown beside the owner's. The step count excludes optional upgrades the plan price leaves out. A bill cost with no kWh or GJ now counts.
 - Questions the short flow never asks are reported as "we did not ask", and no longer lower the readiness score.
 - Accessibility: one pending auto-advance at a time and a short settle window, so a double tap cannot answer the next question; errors and hints are tied to their controls; the current chapter is marked by weight and underline, not colour alone; field borders, small sage text and the focus ring on navy meet contrast minimums; the page title names the current question.
+- "Start over" did nothing in browsers that block pop-up dialogs, because it asked through the browser's own confirm box. It now asks inside the page: "Clear my answers" or "Keep them".
 - Answers can be changed one at a time from the answer screen, which then returns straight to it. The answer carries a prepared date, the bills screen repeats the privacy line, and the approved program name (RARA™) stays visible on phones and in print.
 
 ### Not in this repo
