@@ -263,7 +263,7 @@
           <a href="#case-navigator-heading" class="index-card fade-in">
             <span class="index-num">01</span>
             <h3 class="index-title">RARA Retrofit Navigator</h3>
-            <p class="index-blurb">A self-serve retrofit screening tool for BC rental owners. Nine questions, one next step, a cost after incentives. Member beta.</p>
+            <p class="index-blurb">A self-serve retrofit screening tool for BC rental owners, run from two workbooks the program team edits in Excel. One next step, and the programs a building may qualify for. Member beta.</p>
             <span class="index-link">Read case study &rarr;</span>
           </a>
 
@@ -318,74 +318,67 @@
           <header class="case-meta">
             <p class="case-index">01 / 06</p>
             <p class="case-wordmark">RentBC. Rental Apartment Retrofit Accelerator</p>
-            <h3 id="case-navigator-heading" class="case-role">RARA Retrofit Navigator. Product spec, modelling logic, and build.</h3>
-            <p class="case-outcome">A rental owner answers nine quick questions and gets one next step, a cost range after incentives, and where to start. Member beta.</p>
+            <h3 id="case-navigator-heading" class="case-role">RARA Retrofit Navigator. Product spec, rules engine, and build.</h3>
+            <p class="case-outcome">A rental owner sees where the building is on the RARA path, the one step to take next, and which programs it may qualify for, upgrade by upgrade. Member beta.</p>
           </header>
 
           <div class="case-bignum">
-            <span class="bignum"><span class="num-target" data-count="33" data-suffix="">33</span></span>
-            <span class="bignum-label">retrofit measures screened, sequenced, and priced against 17 incentive programs.</span>
+            <span class="bignum"><span class="num-target" data-count="48" data-suffix="">48</span></span>
+            <span class="bignum-label">eligibility rules across 29 programs, read straight from two workbooks the program team edits. None of them live in the code.</span>
           </div>
 
           <div class="case-body">
 
             <div class="case-block">
               <p class="case-label">Challenge</p>
-              <p>A market rental owner in British Columbia who knows their building needs work faces a stack of overlapping programs: RARA, the CleanBC and BC Hydro MURB Retrofit Program, the BC Hydro Energy Advisor Program, a lighting pilot, municipal streams, federal financing. Each has its own eligibility tests, caps, stacking rules, and end dates. Most owners cannot tell which ones apply, what the work costs after incentives, or what to do first. Every first conversation starts with the same triage, by hand.</p>
+              <p>A market rental owner in British Columbia who knows their building needs work faces a stack of overlapping programs: RARA, the CleanBC and BC Hydro MURB Retrofit Program, the BC Hydro Energy Advisor service, a lighting pilot, municipal streams. Each has its own eligibility tests, caps, stacking rules and end dates, and they change every quarter. Most owners cannot tell which ones apply or what to do first, and a tool that hard-codes the rules is out of date by the next intake.</p>
             </div>
 
             <div class="case-block">
               <p class="case-label">Approach</p>
-              <p>I wrote the product spec from the program rules and my own incentive research, then built it in three gates: design direction, calculation engine, interface. Six plain-language screens, with an "I'm not sure" option wherever an owner plausibly would not know. The engine benchmarks the building against its peers, splits energy use by end use, screens 33 measures, and sequences them into Now, Next, and Later under four rules: never replace gas with gas at end of life, reduce load before electrifying, bundle complementary work with a heating retrofit so it stays fundable, and warn when a program ends before the work would start.</p>
+              <p>The first version was a modelling engine. The second, rebuilt in October 2026, moves every rule into two Excel workbooks, following the approach BC Non-Profit Housing Association uses for its own funding tool: one sheet each for questions, upgrades, programs, rules and notices. A sync reads the workbooks by sheet and header name, with no software to install, and writes one data block into the page. A validator stops the sync on an unknown ID, a rule nobody can match, or a program left showing past its end date. The engine itself holds no program names, amounts or rules, so a program change is a spreadsheet edit, not a code change.</p>
+              <p>Owners take one of two routes. A readiness check of 14 questions finds the next step on the RARA path and scores nine indicators, such as gas-to-electric potential, electrical capacity and tenant cost shift. Its answers then carry into the funding check, so the owner only answers what is still missing.</p>
             </div>
 
             <div class="case-block">
-              <p class="case-label">The three things owners get wrong, built into the logic</p>
+              <p class="case-label">Built into the logic</p>
               <ol class="promo-timeline">
-                <li><span class="promo-step">01</span><span class="promo-title">Tax is charged on the gross cost</span><span class="promo-note">GST applies before incentives, not after. On a $10,000 job with a $5,000 incentive you pay $5,500, not $5,250. The waterfall shows it as its own step.</span></li>
-                <li><span class="promo-step">02</span><span class="promo-title">Incentives do not simply add up</span><span class="promo-note">Each program has its own cap and its own anti-stacking rules. Every figure is a range: limited stacking at one end, full stacking at the other.</span></li>
-                <li><span class="promo-step">03</span><span class="promo-title">In-suite heat pumps move the bill to tenants</span><span class="promo-note">Central plant stays on the owner's meter. Every measure is flagged for whether it shifts heating cost to tenants, because in rental buildings that is the decision.</span></li>
+                <li><span class="promo-step">01</span><span class="promo-title">Rules change faster than code</span><span class="promo-note">Program staff edit a workbook; the sync checks it and rebuilds the page. Each program carries the date it was last checked, and the validator warns when that is more than 90 days ago.</span></li>
+                <li><span class="promo-step">02</span><span class="promo-title">Add-ons are only funded alongside heating</span><span class="promo-note">Under RARA, windows, insulation, lighting and similar work only get incentives when bundled with a heating or hot water retrofit. For a building RARA covers, the tool says so the moment an owner picks them on their own.</span></li>
+                <li><span class="promo-step">03</span><span class="promo-title">In-suite heat pumps move the bill to tenants</span><span class="promo-note">When tenants pay their own electricity, heating costs shift onto them. The tool raises it as its own card, as general information, with the Residential Tenancy Branch named as the authority.</span></li>
               </ol>
             </div>
 
             <div class="case-block case-screens">
               <p class="case-label">Inside the beta</p>
-              <figure class="screen-shot">
-                <img src="/assets/images/navigator-answer.jpg" alt="The Navigator's answer screen: one next step in a navy panel with a request button, an alternative below it, then what the first two years and the full plan could cost after incentives, each marked as estimated." width="1400" height="1850" loading="lazy" />
-                <figcaption>Every answer leads with one next step and a cost after incentives. The charts, tables and method fold away until someone asks for them.</figcaption>
-              </figure>
-              <figure class="screen-shot">
-                <img src="/assets/images/navigator-waterfall.jpg" alt="A stepped waterfall chart showing gross project cost, less incentives, plus GST charged on the gross cost, equalling what the owner pays, given for a low case and a high case." width="1400" height="755" loading="lazy" />
-                <figcaption>Two columns that each add up exactly, so the low and high cases are honest about which incentives they assume.</figcaption>
-              </figure>
               <div class="screen-pair">
                 <figure class="screen-shot">
-                  <img src="/assets/images/navigator-phone-flow.jpg" alt="The tool on a phone, asking when the building was built, with large tap-to-choose answers and a three-part progress bar." width="780" height="1688" loading="lazy" />
+                  <img src="/assets/images/navigator-phone-readiness.jpg" alt="The readiness results on a phone: one next step, a feasibility study, in a navy panel, a free lighting audit as a second action, and the RARA path as a six-stage stepper with three stages done and the next one marked." width="780" height="1688" loading="lazy" />
                 </figure>
                 <figure class="screen-shot">
-                  <img src="/assets/images/navigator-phone-report.jpg" alt="The answer on a phone, showing the building and the next step to take, with a request button." width="780" height="1688" loading="lazy" />
+                  <img src="/assets/images/navigator-phone-funding.jpg" alt="The funding results on a phone: three counts at a glance (programs that may fit, upgrades with a match, rules to know) above a list of sections with how many matched in each." width="780" height="1688" loading="lazy" />
                 </figure>
               </div>
-              <p class="case-video-caption">Screens show a <strong>fictional test building</strong>. A property manager opens this on a phone during a site visit, so it is built for 375px first.</p>
+              <p class="case-video-caption">Screens show a <strong>test building from the workbooks</strong>, not a real one. A property manager opens this on a phone during a site visit, so it is built for 375px first. Anything the workbook marks as unconfirmed carries a small "to confirm" marker.</p>
             </div>
 
             <div class="case-block">
               <p class="case-label">Compliance is in the logic, not the disclaimer</p>
-              <p>The tool never names a contractor or a financing product, never promises a rebate amount or an eligibility outcome, never gives tenancy law advice, and never calls its own output an energy study. It collects no personal information: no name, no email, no address. Answers stay in the browser and say so on screen. One self-contained file, no backend, no analytics, no build step, so the team can open it and the program's own staff can edit the assumptions.</p>
+              <p>The tool never names a contractor or a financing product, never promises a rebate amount or an eligibility outcome, never gives tenancy law advice, and never calls its own output a technical assessment. It collects no personal information: no name, no email, no address. Staff-only rows and team notes never reach the page, and a cell that reads like a note to the team, names a contractor or uses a banned word holds publishing until it is fixed in the workbook. Code never rewords a cell.</p>
             </div>
 
             <div class="case-block">
               <p class="case-label">My role</p>
-              <p>Wrote the spec, defined the modelling and routing rules from program documents and my own research workbook, and ran the build through three review gates. Tested against five reference buildings and 118 automated checks covering the arithmetic, the compliance rules, and the plain-language rules.</p>
+              <p>Wrote the spec, designed the workbook structure with the program rules, and ran the build through three review gates: plan; sync, validator and engine; interface. The workbooks' own 7 test buildings and 4 readiness scenarios reproduce exactly, and every build runs 43 data checks and 1,121 checks across 65 screens.</p>
             </div>
 
             <div class="case-block">
               <p class="case-label">Status</p>
               <div class="stat-strip">
-                <div class="strip-item"><span class="strip-num">9</span><span class="strip-label">questions, about three minutes</span></div>
-                <div class="strip-item"><span class="strip-num">33</span><span class="strip-label">measures screened</span></div>
-                <div class="strip-item"><span class="strip-num">17</span><span class="strip-label">programs checked</span></div>
-                <div class="strip-item"><span class="strip-num">118</span><span class="strip-label">automated checks passing</span></div>
+                <div class="strip-item"><span class="strip-num">2</span><span class="strip-label">workbooks hold every rule</span></div>
+                <div class="strip-item"><span class="strip-num">29</span><span class="strip-label">programs tracked</span></div>
+                <div class="strip-item"><span class="strip-num">11</span><span class="strip-label">workbook test cases matched exactly</span></div>
+                <div class="strip-item"><span class="strip-num">1,164</span><span class="strip-label">automated checks per build</span></div>
                 <div class="strip-item"><span class="strip-num">0</span><span class="strip-label">personal data collected</span></div>
               </div>
               <p>Member beta for RentBC members, opened with a member access code. It has not yet been through BC Hydro's review of public-facing material, so there are no delivery results to report yet.</p>
@@ -397,7 +390,6 @@
             </div>
 
           </div>
-
         </div>
       </article>
 
