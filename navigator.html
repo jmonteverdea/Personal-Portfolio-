@@ -945,7 +945,77 @@ a[href^="tel:"], .page-list a[href^="mailto:"] { white-space: nowrap; }
 .r-next { margin-top: 22px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 6px; }
 .r-next .fine { margin: 0; flex: 1 1 220px; }
 
+@media (min-width: 1100px) {
+  .page-wide:has(.r-split) { max-width: 1200px; }
+  .r-split { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 44px; align-items: start; }
+  .r-side { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; padding: 0 6px 12px 0; scrollbar-width: thin; }
+  .r-side .whatif { margin-bottom: 18px; }
+  .r-side .r-index ul { max-width: none; }
+  .r-main > .r-block:first-child { margin-top: 0; }
+}
+@media (min-width: 1100px) and (pointer: fine) {
+  .r-side .wi-chips { gap: 6px; }
+  .r-side .wi-chip { min-height: 34px; padding: 4px 12px; font-size: 14px; gap: 7px; }
+  .r-side .wi-chip .wi-dot { width: 8px; height: 8px; }
+}
+.card-foot .btn-line { flex: none; white-space: nowrap; }
+.wi-said { margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--bg); font-size: 16px; box-shadow: inset 3px 0 0 var(--good); }
+.cardx.is-new { animation: card-new 2.4s ease-out; }
+.cardx.is-new > :first-child::after { content: "New"; display: inline-block; vertical-align: middle; margin-left: 10px; padding: 2px 10px; border-radius: 99px;
+  font-size: 13px; font-weight: 700; letter-spacing: .02em; background: var(--good); color: var(--bg); }
+@keyframes card-new { 0% { box-shadow: 0 0 0 3px var(--good); background-color: var(--tint); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.glance dd.bump { animation: count-bump 520ms cubic-bezier(.2, .8, .2, 1); transform-origin: left center; }
+@keyframes count-bump { 0% { transform: scale(1.18); color: var(--good); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .cardx.is-new, .glance dd.bump { animation: none; } }
+@media print { .cardx.is-new > :first-child::after { display: none; } }
+.lib-entry { margin: 18px 0 0; text-align: center; }
+.lib-tools { position: sticky; top: 0; z-index: 2; margin: 18px -16px 12px; padding: 10px 16px 8px; background: var(--page); box-shadow: 0 1px 0 var(--hair); }
+.lib-search { display: block; font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+#lib-q { width: 100%; min-height: 48px; padding: 10px 14px 10px 42px; border: 1.5px solid var(--field); border-radius: 12px; font: inherit; font-size: 17px; color: var(--ink); background: var(--bg) no-repeat 14px 50% / 18px 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='8.5' cy='8.5' r='6' fill='none' stroke='%2380929F' stroke-width='2'/%3E%3Cpath d='M13 13l5 5' stroke='%2380929F' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+#lib-q:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-color: var(--ink); }
+.lib-chips { margin: 0 0 20px; }
+.lib-count { margin: 6px 0 0; }
+#lib-list > li[hidden] { display: none; }
+@media print { .lib-tools, .lib-entry { display: none !important; } }
+.when { list-style: none; margin: 14px 0 16px; padding: 0; }
+.when-day { position: relative; padding: 0 0 18px 28px; }
+.when-day::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: -8px; width: 2px; background: var(--line); }
+.when-day:last-child::before { display: none; }
+.when-day::after { content: ""; position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 3px var(--ink); }
+.when-day.soon::after { background: var(--warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 22%, transparent); }
+.when-date { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 6px; }
+.when-date time { font-weight: 800; font-size: 17px; }
+.when-left { font-size: 14px; font-weight: 700; color: var(--ink2); }
+.when-day.soon .when-left { color: var(--warn); }
+.when-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.when-what { margin: 0; font-weight: 700; }
+.when-text { margin: 2px 0 0; color: var(--ink2); }
+@media print { .when-day.soon::after { box-shadow: none; } .acts:has([data-action="calendar"]), .cal-note { display: none !important; } }
+.changed { margin: 0 0 24px; padding: 16px 18px; border-radius: 16px; border: 1.5px solid var(--ink); background: var(--bg); }
+.changed h2 { font-size: 17px; margin: 0 0 8px; }
+.changed ul { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 8px; }
+.changed li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.ch-tag { font-size: 13px; font-weight: 700; letter-spacing: .02em; padding: 2px 10px; border-radius: 99px; }
+.ch-new { background: var(--ink); color: var(--bg); }
+.ch-gone { box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink); }
+.changed .fine { margin: 0; }
+.whatif { margin: 0 0 28px; padding: 18px 18px 16px; border-radius: 16px; background: var(--tint); }
+.whatif h2 { font-size: 18px; margin: 0 0 2px; }
+.whatif .fine { margin: 0 0 12px; }
+.wi-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.wi-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; text-align: left; border-radius: 99px; border: 1.5px solid var(--field);
+  background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out; }
+.wi-chip .wi-dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--field); flex: none; }
+.wi-chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.wi-chip[aria-pressed="true"] .wi-dot { background: var(--bg); box-shadow: none; }
+@media (hover: hover) { .wi-chip:hover { border-color: var(--ink); } }
+.wi-chip:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .wi-chip { transition: none; } }
+
 @media print {
+  .whatif { display: none !important; }
   .r-next { display: none !important; }
   .beta-more { display: inline !important; }
   .cards-2 { grid-template-columns: 1fr; }
@@ -1172,13 +1242,13 @@ const FUND_ASKED = F.questions.filter(q => q.type === 'single');
 const MEASURE_Q = F.questions.find(q => q.source === 'measures');
 
 /* What is remembered between visits. */
-const SAVED = ['at', 'route', 'page', 'done', 'ready', 'fund', 'measures', 'typed', 'carried', 'ask', 'inFunding', 'measuresSeen'];
+const SAVED = ['at', 'route', 'page', 'done', 'ready', 'fund', 'measures', 'typed', 'carried', 'ask', 'inFunding', 'measuresSeen', 'seen', 'libFrom'];
 function freshState() {
-  return { at: 'intake', route: '', page: '', done: [], ready: {}, fund: {}, measures: [], typed: {}, carried: {}, ask: {}, inFunding: false, measuresSeen: false };
+  return { at: 'intake', route: '', page: '', done: [], ready: {}, fund: {}, measures: [], typed: {}, carried: {}, ask: {}, inFunding: false, measuresSeen: false, seen: {}, libFrom: '' };
 }
-const UI = Object.assign(freshState(), { edit: null, error: null, gateError: false, confirmRestart: false, storageOk: true, unlocked: false });
+const UI = Object.assign(freshState(), { edit: null, error: null, gateError: false, confirmRestart: false, storageOk: true, unlocked: false, changes: null, wiNote: null });
 
-function resetState() { Object.assign(UI, freshState(), { edit: null, error: null, confirmRestart: false }); }
+function resetState() { Object.assign(UI, freshState(), { edit: null, error: null, confirmRestart: false, changes: null, wiNote: null }); }
 
 /* Saved answers are IDs. After a workbook change some may no longer exist: those are dropped,
    and if the saved screen no longer exists the member starts again at the intake question. */
@@ -1198,6 +1268,8 @@ function tidyState() {
   const list = screens(), known = at => at === 'path' || at === 'measures' || (at.indexOf('f:') === 0 && FQ[at.slice(2)] && FQ[at.slice(2)].type === 'single') || (at.indexOf('r:') === 0 && !!RQ[at.slice(2)]);
   if (UI.edit && !(list.includes(UI.edit) && known(UI.at))) UI.edit = null;
   if (UI.at === 'page') { if (!R.intake.routes.some(r => r.kind === UI.page)) UI.at = 'intake'; return; }
+  /* The program library goes back to where it was opened from, or to the intake question. */
+  if (UI.at === 'library') { if (UI.libFrom !== 'intake' && !list.includes(UI.libFrom)) UI.libFrom = 'intake'; return; }
   if (UI.at !== 'intake' && !UI.edit && !list.includes(UI.at)) UI.at = 'intake';
   /* Never reopen past a question that is now unanswered: go back to the first one. */
   const upTo = UI.edit ? list.indexOf(UI.edit) : list.indexOf(UI.at);
@@ -1610,7 +1682,7 @@ function mineHTML(list) {
     + '</ul></details>';
 }
 function toolsHTML(extra) {
-  return '<div class="a-tools">' + (extra || '') + '<button type="button" class="btn-line" data-action="print">Print or save as PDF</button>'
+  return '<div class="a-tools">' + (extra || '') + '<button type="button" class="btn-line" data-action="library">Browse all programs</button><button type="button" class="btn-line" data-action="print">Print or save as PDF</button>'
     + '<button type="button" class="quiet" data-action="to-intake">Choose a different starting point</button></div>';
 }
 /* The key to the "to confirm" marker goes under the date line, once the whole screen is known. */
@@ -1625,10 +1697,12 @@ function preparedLine() {
    "Talk to someone" answer. Both results screens end with it, so no result is a dead end.
    id names the heading when something on the page links to it. */
 const CONTACT_SEC = R.sections.find(x => x.kind === 'contact');
-function contactHTML(s, id) {
+function contactHTML(s, id, extra) {
   const route = R.intake.routes.find(r => r.kind === 'contact');
+  /* extra: a button that belongs with the contact, such as "Copy a summary" on the funding results. */
+  const links = route ? siteLinks(route.links) : '';
   return '<section class="r-block plain"><h2' + (id ? ' id="' + id + '" tabindex="-1"' : '') + '>' + esc(s.section) + '</h2><p>' + linkify(s.text) + chip(s, 'text') + '</p>'
-    + (route ? siteLinks(route.links) : '')
+    + (extra ? (links ? links.replace(/<\/div>$/, extra + '</div>') : '<div class="acts">' + extra + '</div>') : links)
     + '</section>';
 }
 /* The line after "nothing matched": where to ask instead. */
@@ -1718,11 +1792,122 @@ function programCard(m, tag, firstAt) {
     + (checked ? '<p class="fine">' + checked + '</p>' : '')
     + '</div></li>';
 }
+/* ---- All programs ----
+   Every program the workbook shows, to browse without answering anything. Whether one fits a
+   building is the funding check's job, so the page says so. The filter labels are written here;
+   the stages and the cards are the workbook's. */
+const STAGE_LABEL = { Support: 'Support services', Planning: 'Studies and planning', Capital: 'Equipment and upgrades' };
+function libraryPrograms() { const today = todayISO(); return F.programs.filter(p => p.show !== false && stillShown(p.hideAfter, today)); }
+function libraryHTML() {
+  const list = libraryPrograms(), stages = list.map(p => p.stage).filter(Boolean).filter(uniq);
+  const tenants = list.some(p => p.audience === TENANT_AUDIENCE);
+  const filter = (key, label, on) => '<button type="button" class="wi-chip lib-f" data-action="lib-filter" data-f="' + esc(key) + '" aria-pressed="' + on + '">' + esc(label) + '</button>';
+  const words = p => [p.name, p.funder, p.type, p.who, p.provides, p.stage, STAGE_LABEL[p.stage] || ''].join(' ').toLowerCase();
+  const back = UI.libFrom === 'fund-results' ? 'Back to my funding results' : UI.libFrom === 'ready-results' ? 'Back to my readiness results' : 'Back';
+  const body = '<div class="answer library">'
+    + '<p class="eyebrow">Browse</p><h1 class="a-title" id="q-title" tabindex="-1">All programs</h1>'
+    + '<p class="lede">Every program in the Navigator, ' + list.length + ' in all. Whether one fits your building depends on your answers; the funding check matches them for you.</p>'
+    + '<div class="lib-tools"><label class="lib-search" for="lib-q">Search the programs</label>'
+    + '<input type="search" id="lib-q" placeholder="Try heat pump or lighting" autocomplete="off" enterkeyhint="search">'
+    + '<p class="fine lib-count" id="lib-count">Showing all ' + list.length + ' programs</p></div>'
+    + '<div class="wi-chips lib-chips" role="group" aria-label="Show">' + filter('all', 'All', true)
+    + stages.map(s => filter('stage:' + s, STAGE_LABEL[s] || s, false)).join('')
+    + (tenants ? filter('tenant', 'For tenants', false) : '') + '</div>'
+    + '<ul class="cards" role="list" id="lib-list">' + list.map(p => programCard({ program: p.id, rules: [] }, 'h2', '')
+      .replace('<li class="cardx" id="p-' + esc(p.id) + '"', '<li class="cardx" id="p-' + esc(p.id) + '" data-stage="' + esc(p.stage || '') + '" data-aud="' + (p.audience === TENANT_AUDIENCE ? 'tenant' : '') + '" data-k="' + esc(words(p)) + '"')).join('') + '</ul>'
+    + '<p class="r-none" id="lib-none" hidden>No program matches that. <button type="button" class="linkish" data-action="lib-clear">Show all programs</button></p>'
+    + '<div class="a-tools"><button type="button" class="btn-line" data-action="back">' + back + '</button></div></div>';
+  return body + confirmKey(body);
+}
+/* Which cards a search and a filter leave showing. Kept apart from the page so the build can test it. */
+function libraryMatch(card, q, f) {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const inFilter = f === 'all' || (f === 'tenant' ? card.aud === 'tenant' : f === 'stage:' + card.stage);
+  return inFilter && words.every(w => card.k.indexOf(w) >= 0);
+}
+
 function noticesHTML(ids) {
   return '<ul class="notices" role="list">' + ids.map(id => {
     const n = FN[id];
     return '<li><h3>' + esc(n.title) + chip(n, 'title') + '</h3><p>' + linkify(n.message) + chip(n, 'message') + '</p></li>';
   }).join('') + '</ul>';
+}
+
+/* ---- Dates to know ----
+   Every date the workbooks give for what matched, soonest first, with how long is left: the day
+   a dated notice ends, and the day the workbook stops listing a program ("Hide after"). That second
+   date is not always the program's own deadline, so the line beside it says what it is. */
+const uniq = (x, i, a) => a.indexOf(x) === i;
+const SOON_DAYS = 45;   // a date this close is drawn as urgent
+function daysUntil(iso) {
+  const a = todayISO().split('-').map(Number), b = iso.split('-').map(Number);
+  return Math.round((Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 864e5);
+}
+function timeLeft(n) { return n <= 0 ? 'Today' : n === 1 ? 'Tomorrow' : n <= 60 ? 'In ' + n + ' days' : 'In about ' + Math.round(n / 30.4) + ' months'; }
+function datesToKnow(res) {
+  const today = todayISO(), out = [];
+  res.notices.forEach(id => { const n = FN[id]; if (n.hideAfter && n.hideAfter >= today) out.push({ date: n.hideAfter, title: n.title, text: n.message, row: n, notice: id }); });
+  res.matches.map(m => m.program).filter(uniq).forEach(id => {
+    const p = FP[id]; if (p.hideAfter && p.hideAfter >= today) out.push({ date: p.hideAfter, title: p.name, text: 'Last day listed here.', cal: 'The last day the RARA Retrofit Navigator lists this program. Its own page has the final deadline.', row: p, program: id, link: p.link });
+  });
+  return out.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.notice ? -1 : 1));
+}
+function datesHTML(list) {
+  if (!list.length) return '';
+  return '<section class="r-block"><h2 id="fr-dates" tabindex="-1">Dates to know</h2>'
+    + '<p class="fine">The dates that apply to what matched, soonest first. A program\'s date is the last day this tool lists it; the program page has its final deadline.</p>'
+    + '<ol class="when" role="list">' + list.map(d => d.date).filter(uniq).map(day => {
+      const n = daysUntil(day);
+      return '<li class="when-day' + (n <= SOON_DAYS ? ' soon' : '') + '"><p class="when-date"><time datetime="' + day + '">' + fmtDate(day) + '</time>'
+        + '<span class="when-left">' + timeLeft(n) + '</span></p><ul role="list">'
+        + list.filter(d => d.date === day).map(d => '<li><p class="when-what">'
+          + (d.program ? '<a href="#p-' + esc(d.program) + '">' + esc(d.title) + '</a>' + chip(d.row, 'name') : esc(d.title) + chip(d.row, 'title')) + '</p>'
+          + '<p class="when-text">' + linkify(d.text) + (d.notice ? chip(d.row, 'message') : chip(d.row, 'hideAfter')) + '</p></li>').join('')
+        + '</ul></li>';
+    }).join('') + '</ol>'
+    + '<div class="acts"><button type="button" class="btn-line" data-action="calendar">Add these dates to my calendar</button></div>'
+    + '<p class="fine cal-note">Saves a calendar file on this device with a reminder two weeks before each date. Nothing is sent anywhere.</p></section>';
+}
+/* The same dates as a calendar file (iCalendar), one all-day event each with a two-week reminder. */
+function icsText(list) {
+  const esc2 = s => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  const fold = line => { let out = '', rest = line; while (rest.length > 60) { out += rest.slice(0, 60) + '\r\n '; rest = rest.slice(60); } return out + rest; };
+  const ymd = iso => iso.replace(/-/g, '');
+  const next = iso => { const p = iso.split('-').map(Number), d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + 1)); return d.toISOString().slice(0, 10); };
+  const stamp = ymd(todayISO()) + 'T000000Z';
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//RentBC//RARA Retrofit Navigator//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:RARA Retrofit Navigator'];
+  list.forEach(d => {
+    lines.push('BEGIN:VEVENT', 'UID:rara-' + (d.program || d.notice) + '-' + ymd(d.date) + '@navigator.rentbc', 'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + ymd(d.date), 'DTEND;VALUE=DATE:' + ymd(next(d.date)),
+      'SUMMARY:' + esc2(d.title),
+      'DESCRIPTION:' + esc2((d.cal || d.text) + '\n\nFrom the RARA Retrofit Navigator, a screening tool. Check with RentBC before you rely on this date.'));
+    if (d.link) lines.push('URL:' + d.link);
+    lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'TRIGGER:-P14D', 'DESCRIPTION:' + esc2(d.title + ' in two weeks'), 'END:VALARM', 'END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return lines.map(fold).join('\r\n') + '\r\n';
+}
+
+/* What if: every upgrade as a switch on the results. A tap re-runs the match on the spot,
+   so an owner can see what adding or dropping an upgrade changes without going back. */
+function whatIfHTML() {
+  return '<section class="whatif" aria-labelledby="wi-h"><h2 id="wi-h">Try other upgrades</h2>'
+    + '<p class="fine">Tap an upgrade to add it or take it off. The programs below update straight away.</p>'
+    + '<div class="wi-chips">' + F.measures.map(m => {
+      const on = UI.measures.includes(m.id);
+      return '<button type="button" class="wi-chip" data-action="toggle-measure" data-m="' + esc(m.id) + '" aria-pressed="' + on + '">'
+        + '<span class="wi-dot" aria-hidden="true"></span>' + esc(m.name) + '</button>';
+    }).join('') + '</div>' + wiNoteHTML() + '</section>';
+}
+/* The line under the switches after a tap: what changed, with a link to each program that appeared. */
+function wiNoteHTML() {
+  const n = UI.wiNote;
+  if (!n || !FM[n.m]) return '';
+  const links = ids => ids.map(id => '<a href="#p-' + esc(id) + '">' + esc(FP[id].name) + '</a>').join('; ');
+  return '<p class="wi-said"><b>' + esc(FM[n.m].name) + (n.on ? ' taken off.' : ' added.') + '</b> '
+    + (n.added.length ? 'New: ' + links(n.added) + '. ' : '')
+    + (n.gone.length ? 'No longer showing: ' + n.gone.map(id => esc(FP[id].name)).join('; ') + '. ' : '')
+    + (!n.added.length && !n.gone.length ? 'The same programs fit.' : '') + '</p>';
 }
 
 /* At a glance: three counts from the match, before the detail. Counts only, never an amount. */
@@ -1745,22 +1930,27 @@ function fundResultsHTML() {
   const cards = (list, tag, place) => '<ul class="cards" role="list">' + list.map(m => { const first = drawn[m.program]; if (!first) drawn[m.program] = place; return programCard(m, tag, first); }).join('') + '</ul>';
   const forTenants = res.matches.filter(m => FP[m.program].audience === TENANT_AUDIENCE);
   const tenantNotices = res.notices.filter(id => /^tenant/i.test(FN[id].section || '')), otherNotices = res.notices.filter(id => !tenantNotices.includes(id));
+  const dates = datesToKnow(res);
   const mark = id => FM[id].unconfirmed && FM[id].unconfirmed.length ? TO_CONFIRM : '';
   /* On this page: one row per section and per upgrade picked, with how many matched. */
   const row = (id, text, n, sub, extra) => '<li' + (sub ? ' class="sub"' : '') + '><a href="#' + id + '"><span>' + esc(text) + (extra || '') + '</span>' + (n === null ? '' : '<span class="num">' + n + '</span>') + '</a></li>';
   let h = '<div class="answer">'
     + '<p class="eyebrow">Funding check</p>'
     + '<h1 class="a-title" id="q-title" tabindex="-1">Programs this building may qualify for</h1>' + preparedLine()
+    + changesHTML()
     + glanceHTML(res, groups, otherNotices.length)
+    /* On a wide screen the switches and the index stay beside the programs, so a tap and its result are both in view. */
+    + '<div class="r-split"><div class="r-side">' + whatIfHTML()
     + '<nav class="r-index" aria-label="On this page"><ul role="list">'
     + row('fr-services', 'Support services', groups.services.length)
     + row('fr-programs', 'Programs for the upgrades you picked', null)
     + groups.byMeasure.map((g, n) => row('fr-u' + n, FM[g.measure].name, g.matches.length, true, mark(g.measure))).join('')
     + (forTenants.length || tenantNotices.length ? row('fr-tenants', 'For your tenants', null) : '')
+    + (dates.length ? row('fr-dates', 'Dates to know', dates.map(d => d.date).filter(uniq).length) : '')
     + row('fr-rules', 'Rules and deadlines to know', otherNotices.length)
     + (CONTACT_SEC ? row('fr-talk', CONTACT_SEC.section, null) : '')
     + row('mine', 'Check or change your answers', null)
-    + '</ul></nav>';
+    + '</ul></nav></div><div class="r-main">';
 
   h += '<section class="r-block"><h2 id="fr-services" tabindex="-1">Support services</h2>'
     + (groups.services.length ? cards(groups.services, 'h3', 'Support services') : '<p class="r-none">No support service matched your answers.' + askInstead() + '</p>') + '</section>';
@@ -1781,15 +1971,59 @@ function fundResultsHTML() {
       + (tenantNotices.length ? noticesHTML(tenantNotices) : '') + '</section>';
   }
 
+  h += datesHTML(dates);
+
   h += '<section class="r-block"><h2 id="fr-rules" tabindex="-1">Rules and deadlines to know</h2>'
     + (otherNotices.length ? noticesHTML(otherNotices) : '<p class="r-none">No rules or deadlines apply to your answers.</p>') + '</section>';
 
-  if (CONTACT_SEC) h += contactHTML(CONTACT_SEC, 'fr-talk');
+  const copyBtn = '<button type="button" class="btn-line" data-action="copy-summary">Copy a summary to send RentBC</button>';
+  if (CONTACT_SEC) h += contactHTML(CONTACT_SEC, 'fr-talk', copyBtn);
 
   h += mineHTML(FUND_ASKED.map(q => 'f:' + q.id).concat('measures'))
-    + toolsHTML(UI.route === 'readiness' ? '<button type="button" class="btn-line" data-action="to-readiness">Back to my readiness results</button>' : '')
-    + '</div>';
+    + toolsHTML((CONTACT_SEC ? '' : copyBtn)
+      + (UI.route === 'readiness' ? '<button type="button" class="btn-line" data-action="to-readiness">Back to my readiness results</button>' : ''))
+    + '</div></div></div>';
   return withKey(h);
+}
+
+/* What changed since the last visit. The programs drawn on the funding results are kept in this
+   browser with the answers that drew them. On a later visit with the same answers, a program that
+   has come or gone is named at the top. Different answers draw no note: that change is the member's own. */
+function answersKey() { return JSON.stringify([FUND_ASKED.map(q => UI.fund[q.id] || ''), UI.measures.slice().sort()]); }
+function fundProgramIds() { return matchFunding(F, UI.fund, UI.measures, todayISO()).matches.map(m => m.program).filter((x, i, a) => a.indexOf(x) === i); }
+function noteChanges() {
+  const s = UI.seen; UI.changes = null;
+  if (!s || !Array.isArray(s.programs) || !s.on || s.key !== answersKey()) return;
+  const now = fundProgramIds(), before = s.programs.map(p => p && p.id);
+  const added = now.filter(id => !before.includes(id)), gone = s.programs.filter(p => p && !now.includes(p.id));
+  if (added.length || gone.length) UI.changes = { on: s.on, key: s.key, added: added.map(id => FP[id].name), gone: gone.map(p => String(p.name || p.id)) };
+}
+function recordSeen() { UI.seen = { key: answersKey(), on: todayISO(), programs: fundProgramIds().map(id => ({ id: id, name: FP[id].name })) }; }
+function changesHTML() {
+  const c = UI.changes;
+  if (!c || c.key !== answersKey()) return '';
+  return '<section class="changed" aria-labelledby="ch-h"><h2 id="ch-h">What changed since ' + fmtDate(c.on) + '</h2><ul role="list">'
+    + (c.added.length ? '<li><span class="ch-tag ch-new">New</span>' + esc(c.added.join('; ')) + '</li>' : '')
+    + (c.gone.length ? '<li><span class="ch-tag ch-gone">No longer showing</span>' + esc(c.gone.join('; ')) + '</li>' : '')
+    + '</ul><p class="fine">Programs open, close and change their rules. Ask RentBC before you count on one that is no longer showing.</p></section>';
+}
+
+/* A plain-text copy of the funding result, for the member to paste into an email to
+   RentBC if they choose. It stays on their clipboard; the page sends nothing. */
+function summaryText() {
+  const res = matchFunding(F, UI.fund, UI.measures, todayISO()), groups = groupMatches(F, res.matches, UI.measures);
+  const names = list => list.map(m => m.program).filter((x, i, a) => a.indexOf(x) === i).map(id => FP[id].name);
+  const qText = at => { const p = questionParts(at); return p.plain || p.title.replace(/<[^>]+>/g, ''); };
+  const lines = ['RARA Retrofit Navigator: funding check', 'Prepared ' + fmtDate(todayISO()) + '. A screening result, not an energy study or a technical assessment.', '', 'My building'];
+  FUND_ASKED.forEach(q => lines.push('- ' + qText('f:' + q.id) + ' ' + answerLabel('f:' + q.id)));
+  lines.push('- Upgrades picked: ' + answerLabel('measures'), '', 'Programs this building may qualify for');
+  if (groups.services.length) lines.push('- Support services: ' + names(groups.services).join('; '));
+  groups.byMeasure.forEach(g => lines.push('- ' + FM[g.measure].name + ': ' + (g.matches.length ? names(g.matches).join('; ') : 'no program matched')));
+  const rules = res.notices.filter(id => !/^tenant/i.test(FN[id].section || '')).length;
+  const dates = datesToKnow(res);
+  if (dates.length) { lines.push('', 'Dates to know'); dates.forEach(d => lines.push('- ' + fmtDate(d.date) + ': ' + d.title)); }
+  lines.push('', 'Rules and deadlines to know: ' + rules + '. The full list is in the Navigator.');
+  return lines.join('\n');
 }
 
 /* ---- One function for any screen ---- */
@@ -1798,11 +2032,14 @@ function screenHTML(at) {
   if (at === 'page') return '<div class="page">' + pageHTML() + '</div>';
   if (at === 'ready-results') return '<div class="page page-wide">' + readyResultsHTML() + '</div>';
   if (at === 'fund-results') return '<div class="page page-wide">' + fundResultsHTML() + '</div>';
+  if (at === 'library') return '<div class="page page-wide">' + libraryHTML() + '</div>';
+  if (at === 'intake') return '<div class="page">' + progressHTML(at) + questionHTML(at)
+    + '<p class="lib-entry"><button type="button" class="linkish" data-action="library">Or browse all ' + libraryPrograms().length + ' programs first</button></p></div>';
   return '<div class="page">' + progressHTML(at) + questionHTML(at) + '</div>';
 }
 /* The tab title names the screen, so two tabs or a history list can be told apart. */
 function titleFor(at) {
-  const name = at === 'ready-results' ? 'Readiness results' : at === 'fund-results' ? 'Funding results'
+  const name = at === 'ready-results' ? 'Readiness results' : at === 'fund-results' ? 'Funding results' : at === 'library' ? 'All programs'
     : at === 'intake' ? R.intake.question
     : at === 'page' ? ((R.intake.routes.find(r => r.kind === UI.page) || {}).answer || '')
     : isQuestion(at) && !UI.edit ? positionText(at) : '';
@@ -1877,6 +2114,7 @@ function render(focusSel) {
   const app = document.getElementById('app'), at = unlocked() ? UI.at : 'gate';
   app.classList.toggle('still', at === shownAt); shownAt = at;
   document.title = titleFor(at);
+  if (at === 'fund-results') { recordSeen(); saveState(); }
   if (at === 'gate') UI.confirmRestart = false;
   app.innerHTML = bannersHTML(at) + (UI.confirmRestart ? restartHTML() : '') + screenHTML(at);
   const restart = document.getElementById('restart');
@@ -1889,6 +2127,61 @@ function render(focusSel) {
 
 /* A line for screen readers that is not redrawn with the screen, so what it says is read out. */
 function say(text) { const live = document.getElementById('live'); if (live) live.textContent = text; }
+/* "Copy a summary": the clipboard API where the browser allows it, a hidden text box where it
+   doesn't. The button says what happened for a moment, then goes back to its label. */
+function copySummary(btn) {
+  const text = summaryText(), label = btn.textContent;
+  const done = ok => {
+    btn.textContent = ok ? 'Copied. Paste it into an email to RentBC' : 'Copy didn’t work. Use Print instead';
+    say(btn.textContent + '.');
+    setTimeout(() => { btn.textContent = label; }, 3000);
+  };
+  const fallback = () => {
+    const box = document.createElement('textarea');
+    box.value = text; box.setAttribute('readonly', ''); box.style.position = 'fixed'; box.style.opacity = '0';
+    document.body.appendChild(box); box.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    box.remove(); btn.focus(); done(ok);
+  };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => done(true), fallback);
+  else fallback();
+}
+
+/* "Add these dates to my calendar": the file is made here and saved on the device. Phones open
+   it straight into the calendar app. */
+function saveCalendar() {
+  const list = datesToKnow(matchFunding(F, UI.fund, UI.measures, todayISO()));
+  if (!list.length) return;
+  const url = URL.createObjectURL(new Blob([icsText(list)], { type: 'text/calendar' })), a = document.createElement('a');
+  a.href = url; a.download = 'rara-navigator-dates.ics'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  say('Calendar file saved with ' + list.length + (list.length === 1 ? ' date' : ' dates') + '. Open it to add them to your calendar.');
+}
+
+/* After a What if tap: a program that just appeared is marked new, and a count that changed
+   pulses once. The marks go with the next redraw. Screen readers hear the same in words. */
+function glanceCounts() { return [].map.call(document.querySelectorAll('.glance dd'), d => d.textContent); }
+function showChange(added, counts) {
+  added.forEach(id => { const card = document.getElementById('p-' + id); if (card) card.classList.add('is-new'); });
+  document.querySelectorAll('.glance dd').forEach((d, i) => { if (counts[i] !== undefined && counts[i] !== d.textContent) d.classList.add('bump'); });
+}
+
+/* The program library filters in place, so typing never loses the focus or the scroll. */
+let libFilter = 'all';
+function filterLibrary(announce) {
+  const q = (document.getElementById('lib-q') || {}).value || '', cards = document.querySelectorAll('#lib-list > li');
+  let n = 0;
+  cards.forEach(li => { const on = libraryMatch({ k: li.getAttribute('data-k'), stage: li.getAttribute('data-stage'), aud: li.getAttribute('data-aud') }, q, libFilter); li.hidden = !on; if (on) n++; });
+  document.querySelectorAll('.lib-f').forEach(b => b.setAttribute('aria-pressed', String(b.getAttribute('data-f') === libFilter)));
+  const line = n === cards.length ? 'Showing all ' + n + ' programs' : 'Showing ' + n + ' of ' + cards.length + ' programs';
+  const count = document.getElementById('lib-count'); if (count) count.textContent = line;
+  const none = document.getElementById('lib-none'); if (none) none.hidden = n > 0;
+  if (announce) say(line + '.');
+}
+let libTimer = null;
+document.addEventListener('input', ev => {
+  if (ev.target && ev.target.id === 'lib-q') { filterLibrary(false); clearTimeout(libTimer); libTimer = setTimeout(() => filterLibrary(true), 700); }
+});
 
 /* ---- The browser's Back button ----
    On a phone, Back (or the back gesture) is how people step back. Without this it would leave
@@ -1939,7 +2232,7 @@ document.addEventListener('click', ev => {
 /* Moving between screens puts the reader at the top and on the new heading,
    so screen reader users hear the question that just appeared. */
 function go(at) {
-  UI.at = at; UI.error = null; UI.confirmRestart = false;
+  UI.at = at; UI.error = null; UI.confirmRestart = false; UI.wiNote = null;
   saveState(); say(''); render(); armBack();
   /* On a phone the beta note and header take a third of the screen. They stay one swipe up; a new screen opens at its own top. */
   const app = document.getElementById('app'), phone = window.matchMedia('(max-width: 640px)').matches;
@@ -1979,6 +2272,7 @@ function goBack() {
     if (back === null) { UI.error = problemWith(UI.at); render('.tile input'); return; }
     go(back); return;
   }
+  if (UI.at === 'library') { go(UI.libFrom || 'intake'); return; }
   go(UI.at === 'page' ? 'intake' : previousScreen(UI.at));
 }
 
@@ -2063,6 +2357,22 @@ document.addEventListener('click', ev => {
   if (act === 'to-readiness') go('ready-results');
   if (act === 'to-intake') go('intake');
   if (act === 'print') window.print();
+  if (act === 'copy-summary') copySummary(btn);
+  if (act === 'calendar') saveCalendar();
+  if (act === 'library') { UI.libFrom = UI.at; libFilter = 'all'; go('library'); }
+  if (act === 'lib-filter') { libFilter = btn.getAttribute('data-f'); filterLibrary(true); }
+  if (act === 'lib-clear') { libFilter = 'all'; const q = document.getElementById('lib-q'); if (q) q.value = ''; filterLibrary(true); if (q) q.focus(); }
+  if (act === 'toggle-measure') {
+    const m = btn.getAttribute('data-m'), on = UI.measures.includes(m);
+    const before = fundProgramIds(), counts = glanceCounts();
+    UI.measures = on ? UI.measures.filter(x => x !== m) : UI.measures.concat(m);
+    const now = fundProgramIds(), added = now.filter(id => !before.includes(id));
+    UI.wiNote = { m: m, on: on, added: added, gone: before.filter(id => !now.includes(id)) };
+    saveState(); render('[data-m="' + m + '"]');
+    showChange(added, counts);
+    say((FM[m] ? FM[m].name : 'Upgrade') + (on ? ' taken off. ' : ' added. ') + now.length + (now.length === 1 ? ' program may fit' : ' programs may fit')
+      + (added.length ? '. New: ' + added.map(id => FP[id].name).join('; ') + '.' : '.'));
+  }
   if (act === 'restart') showRestart(true);
   if (act === 'restart-no') showRestart(false);
   if (act === 'restart-yes') { clearState(); resetState(); go('intake'); }
@@ -2087,6 +2397,7 @@ function cameBack() {
 }
 
 loadState();
+noteChanges();   /* before the first draw, which records what is seen now */
 render();
 if (cameBack()) goBack();
 armBack();
