@@ -968,6 +968,16 @@ a[href^="tel:"], .page-list a[href^="mailto:"] { white-space: nowrap; }
 @keyframes count-bump { 0% { transform: scale(1.18); color: var(--good); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .cardx.is-new, .glance dd.bump { animation: none; } }
 @media print { .cardx.is-new > :first-child::after { display: none; } }
+.path-hint { margin: 18px 0 0; }
+.path-t { position: static; margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.path-t::before { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 10px; }
+.path-t:focus-visible { outline: none; }
+.path-t:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (hover: hover) { .path li:has(.path-t):hover .path-t { text-decoration: underline; text-underline-offset: 3px; } }
+.step-hero.swap { animation: hero-swap 480ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes hero-swap { 0% { opacity: .35; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .step-hero.swap { animation: none; } }
+@media print { .path-hint { display: none; } }
 .lib-entry { margin: 18px 0 0; text-align: center; }
 .lib-tools { position: sticky; top: 0; z-index: 2; margin: 18px -16px 12px; padding: 10px 16px 8px; background: var(--page); box-shadow: 0 1px 0 var(--hair); }
 .lib-search { display: block; font-size: 15px; font-weight: 700; margin: 0 0 6px; }
@@ -1733,9 +1743,12 @@ function readyResultsHTML() {
       + '<h2 id="h-step">' + esc(res.next.name) + '</h2><p>' + linkify(res.next.message) + '</p>'
       + (res.next.also ? '<p class="also"><b>Also:</b> ' + esc(res.next.also) + '</p>' : '')
       + '</section>'
+      /* Each stage that stands for a workbook step is a switch: tick it off and the next step is worked out again. */
+      + '<p class="fine path-hint" id="path-hint">Already done one of these? Tick it off here and your next step updates.</p>'
       + '<ol class="path" role="list" aria-label="The steps in order">' + R.nextSteps.map(n => {
-        const isNext = n.name === res.next.name, isDone = !isNext && UI.done.includes(stageStep[n.name]);
-        return '<li' + (isNext ? ' class="next" aria-current="step"' : isDone ? ' class="done"' : '') + '><span>' + esc(n.name) + '</span>'
+        const isNext = n.name === res.next.name, isDone = !isNext && UI.done.includes(stageStep[n.name]), step = stageStep[n.name];
+        const label = step ? '<button type="button" class="path-t" data-action="toggle-step" data-step="' + esc(step) + '" aria-pressed="' + UI.done.includes(step) + '" aria-describedby="path-hint">' + esc(n.name) + '</button>' : '<span>' + esc(n.name) + '</span>';
+        return '<li' + (isNext ? ' class="next" aria-current="step"' : isDone ? ' class="done"' : '') + '>' + label
           + (isNext ? '<span class="tag">Next</span>' : isDone ? '<span class="tag done-tag">' + TICK + 'Done</span>' : '') + '</li>';
       }).join('') + '</ol>'
       /* The funding check sits below the indicator cards, so it gets a way to it from here. */
@@ -2359,6 +2372,15 @@ document.addEventListener('click', ev => {
   if (act === 'print') window.print();
   if (act === 'copy-summary') copySummary(btn);
   if (act === 'calendar') saveCalendar();
+  if (act === 'toggle-step') {
+    const s = btn.getAttribute('data-step'), on = UI.done.includes(s), stage = btn.textContent;
+    const before = readinessResult(R, UI.done, UI.ready).next.name;
+    UI.done = on ? UI.done.filter(x => x !== s) : UI.done.concat(s);
+    saveState(); render('[data-step="' + s + '"]');
+    const next = readinessResult(R, UI.done, UI.ready).next.name, hero = document.querySelector('.step-hero');
+    if (hero && next !== before) hero.classList.add('swap');
+    say(stage + (on ? ' marked not done. ' : ' marked done. ') + 'Your next step: ' + next + '.');
+  }
   if (act === 'library') { UI.libFrom = UI.at; libFilter = 'all'; go('library'); }
   if (act === 'lib-filter') { libFilter = btn.getAttribute('data-f'); filterLibrary(true); }
   if (act === 'lib-clear') { libFilter = 'all'; const q = document.getElementById('lib-q'); if (q) q.value = ''; filterLibrary(true); if (q) q.focus(); }
