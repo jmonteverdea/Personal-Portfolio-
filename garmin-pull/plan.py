@@ -10,15 +10,15 @@ PLAN = json.loads((Path(__file__).parent / "coach_plan.json").read_text())
 INTERVALS = {
     "setup": {"Tue": "Easy 30 min. Hard sessions start next week.", "Sat": "Easy bike 30 min."},
     "rebuild": {
-        "Tue": "10 min easy, then 6 x 1 min hard (8/10 effort) with 2 min easy between, 5 min cool-down.",
+        "Tue": "Bike: 10 min easy, then 6 x 1 min hard (8/10, high resistance) with 2 min easy between, 5 min cool-down.",
         "Sat": "Easy bike 40 min. One hard session a week in Rebuild.",
     },
     "build": {
-        "Tue": "10 min easy, then 6 x 2 min hard with 2 min easy between, 5 min cool-down.",
+        "Tue": "Bike: 10 min easy, then 6 x 2 min hard with 2 min easy between, 5 min cool-down.",
         "Sat": "Bike: 10 min easy, 4 x 4 min hard with 3 min easy between, 5 min cool-down.",
     },
     "push": {
-        "Tue": "10 min easy, then 8 x 2 min hard with 90 s easy between, 5 min cool-down.",
+        "Tue": "Bike: 10 min easy, then 8 x 2 min hard with 90 s easy between, 5 min cool-down.",
         "Sat": "Bike: 10 min easy, 5 x 4 min hard with 3 min easy between, 10 min steady.",
     },
 }
@@ -57,8 +57,6 @@ def session_for(day):
         if phase["hard_sessions"] == 0:
             slot["hard"] = False
             slot["session"] = "Easy session"
-    if phase["id"] == "rebuild" and dow in ("Tue", "Thu", "Sat", "Sun"):
-        slot["weigh_in"] = True  # most mornings while calibrating
     return slot
 
 

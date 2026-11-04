@@ -59,7 +59,7 @@ def morning(today):
     hrv = f"HRV {now['hrv']} ({(now.get('hrv_status') or 'n/a').lower()})" if now.get("hrv") else "HRV n/a"
     sleep = f"slept {now['sleep_hours']:.1f} h" if now.get("sleep_hours") else "no sleep data"
     bb = f"body battery {now['body_battery_max']}" if now.get("body_battery_max") else "body battery n/a"
-    y_steps = yday.get("steps")
+    y_steps = yday.get("move_steps")
     y_ok = y_steps is not None and y_steps >= targets_for(today - timedelta(days=1))["steps"]
 
     lines = [
@@ -73,18 +73,16 @@ def morning(today):
     if s.get("hard") and level != "RED" and s.get("detail"):
         lines.append(s["detail"])
     if s["weigh_in"]:
-        lines.append("Weigh in now: after the bathroom, before food or water.")
-    lines.append(f"Steps target {t['steps']:,}. Log breakfast before you eat it. Protein {PLAN['protein_g']} g.")
+        lines.append("Weigh in now on the Wyze scale: after the bathroom, before food, water or coffee." + (" Measure your waist." if today.weekday() == 6 else ""))
+    lines.append(f"Steps target {t['steps']:,} (bike minutes count x100). Food: {PLAN['calories_start']:,} kcal, {PLAN['protein_g']} g protein, per the Diet Coach Log.")
     lines += [
         "",
-        f"Yesterday: {y_steps:,} steps ({'hit' if y_ok else 'missed'})" if y_steps is not None else "Yesterday: no step data",
+        f"Yesterday: {y_steps:,} steps with bike credit ({'hit' if y_ok else 'missed'})" if y_steps is not None else "Yesterday: no step data",
     ]
     if yday.get("activities"):
         lines[-1] += f", {yday['activities']}"
     if yday.get("calories_in"):
         lines[-1] += f", {yday['calories_in']:,.0f} kcal logged"
-    elif phase["food_log_days"] >= 7:
-        lines[-1] += ", no food logged"
     lines[-1] += "."
     return "\n".join(lines) + "\n"
 
@@ -93,18 +91,19 @@ def pace(now):
     today = now.date()
     row = fetch(today, today)["days"][0]
     t = targets_for(today)["steps"]
-    steps = row.get("steps") or 0
+    steps = row.get("move_steps") or 0
+    bike = row.get("bike_minutes") or 0
     frac = min(1, max(0, (now.hour + now.minute / 60 - WAKE) / (BED - WAKE)))
     expected = int(t * frac)
     gap = t - steps
     if steps >= expected * 0.9:
         subject = f"On pace: {steps:,} of {t:,} steps"
-        body = f"{steps:,} steps by {now:%-I:%M %p}. Pace needs {expected:,}. Keep moving and you land it."
+        body = f"{steps:,} steps by {now:%-I:%M %p} ({bike:.0f} bike min counted). Pace needs {expected:,}. Keep moving and you land it."
     else:
-        mins = max(10, round(gap / 110 / 5) * 5)  # about 110 steps a minute walking
-        subject = f"Behind: {steps:,} of {t:,} steps. Walk {mins} min tonight"
-        body = (f"{steps:,} steps by {now:%-I:%M %p}. Pace needs {expected:,}. You are {gap:,} short of {t:,}.\n"
-                f"Fix: {mins} minutes of walking before {BED - 12} PM. Split it: half after work, half after dinner. Never miss twice.")
+        mins = max(10, round(gap / 100 / 5) * 5)  # a bike minute counts as 100 steps
+        subject = f"Behind: {steps:,} of {t:,} steps. Bike {mins} min tonight"
+        body = (f"{steps:,} steps by {now:%-I:%M %p} ({bike:.0f} bike min counted). Pace needs {expected:,}. You are {gap:,} short of {t:,}.\n"
+                f"Fix: {mins} min easy on the bike before {BED - 12} PM, or split it with a walk if it is dry. Never miss twice.")
     return f"{subject}\n\n{body}\n"
 
 

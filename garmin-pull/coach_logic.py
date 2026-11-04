@@ -16,12 +16,14 @@ def mean(rows, key):
 
 
 def week_stats(rows, t):
-    full = [r for r in rows if r.get("steps") is not None]
+    full = [r for r in rows if r.get("move_steps") is not None]
     hard = sum(1 for r in rows if (r.get("intensity_vigorous") or 0) >= 10)
     return {
         "days": len(full),
-        "steps": mean(full, "steps"),
-        "floor_days": sum(1 for r in full if r["steps"] >= t["steps"]),
+        "steps": mean(full, "move_steps"),
+        "raw_steps": mean(full, "steps"),
+        "bike_min": sum(nums(rows, "bike_minutes")),
+        "floor_days": sum(1 for r in full if r["move_steps"] >= t["steps"]),
         "active_cal": mean(full, "active_calories"),
         "total_cal": mean(full, "total_calories"),
         "vigorous": sum(nums(rows, "intensity_vigorous")),

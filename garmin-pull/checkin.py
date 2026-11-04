@@ -48,22 +48,23 @@ def build_email(data, end):
 
     checks = [
         ("Steps", (this["steps"] or 0) >= t["steps"],
-         f"{fmt(this['steps'])} a day, target {t['steps']:,}{delta(this['steps'], prev['steps'])}. {this['floor_days']} of {this['days']} days on target."),
-        ("Weigh-ins", this["weigh_ins"] >= t["weigh_ins"], f"{this['weigh_ins']} of {t['weigh_ins']}."),
-        ("Food log", this["food_days"] >= t["food_log_days"],
-         f"{this['food_days']} of {t['food_log_days']} days logged" + (f", {fmt(this['intake'])} kcal a day." if this["intake"] else ".")),
+         f"{fmt(this['steps'])} a day with bike credit ({fmt(this['raw_steps'])} walked + {this['bike_min']:.0f} bike min), "
+         f"target {t['steps']:,}{delta(this['steps'], prev['steps'])}. {this['floor_days']} of {this['days']} days on target."),
+
+        ("Weigh-ins", None, "Tracked on the Wyze scale and in the Diet Coach Log."),
         ("Hard sessions", this["hard_sessions"] >= t["hard_sessions"],
          f"{this['hard_sessions']} of {t['hard_sessions']}. {this['vigorous']:.0f} vigorous min (target {t['vigorous']})."),
         ("Sleep", (this["sleep"] or 0) >= t["sleep"], f"{fmt(this['sleep'], 1, ' h')} a night{delta(this['sleep'], prev['sleep'], 1, ' h')}."),
     ]
     if t["hard_sessions"] == 0:
         checks = [c for c in checks if c[0] != "Hard sessions"]
+    checks = [c for c in checks if c[1] is not None]
     hit = sum(1 for c in checks if c[1])
 
     wk = week_number(end)
     head = f"Week {wk} of {total_weeks()}" if wk else "Setup week"
     lines = [
-        f"Coach: {head} scored {hit}/{len(checks)}. {fmt(this['steps'])} steps a day, {this['weigh_ins']} weigh-ins",
+        f"Coach: {head} scored {hit}/{len(checks)}. {fmt(this['steps'])} steps a day, {this['hard_sessions']} hard sessions",
         "",
         f"{head} · {phase['name']} phase · {start:%a %b %-d} to {end:%a %b %-d}",
         "",
@@ -72,10 +73,9 @@ def build_email(data, end):
     lines += [f"{'OK  ' if ok else 'MISS'}  {name}: {text}" for name, ok, text in checks]
 
     lines += ["", "WEIGHT"]
-    if not trend:
-        lines.append("No weigh-ins on record. The deadline math starts with your first one.")
-    elif trend["days_old"] > 14:
-        lines.append(f"Last weigh-in {trend['latest']:.1f} kg, {trend['days_old']} days ago. I am coaching blind on the number that matters.")
+    if not trend or trend["days_old"] > 14:
+        lines.append("Weight lives on your Wyze scale and in the Diet Coach Log, not in Garmin. "
+                     "Reply with this week's Mon, Wed, Fri, Sun morning readings and waist.")
     else:
         lines.append(f"Trend {trend['trend_kg']:.1f} kg, {trend['to_goal']:.1f} kg to {goal:.0f} kg by {plan_end:%b %-d}.")
         lines.append(f"Needed: {trend['needed_per_week']:.2f} kg a week.")
@@ -85,20 +85,18 @@ def build_email(data, end):
             lines.append(f"Actual: {trend['kg_per_week']:+.2f} kg a week, {proj}. {'On track.' if on_track else 'Behind the deadline.'}")
 
     lines += ["", "CALORIES"]
+    lines.append(f"Diet Coach Log targets: {PLAN['calories_start']:,} kcal, {PLAN['protein_g']} g protein, {PLAN.get('fiber_g', 32)} g fiber.")
+    lines.append(f"Garmin says you burned {fmt(this['total_cal'])} a day this week, "
+                 f"so the plan's gap is about {fmt((this['total_cal'] or 0) - PLAN['calories_start'])} kcal a day.")
     if cal:
         lines.append(f"Calibrated from {cal['days']} logged days: you burn about {cal['burn']:,.0f} kcal a day.")
-        lines.append(f"New target: {cal['target']:,} kcal and {PLAN['protein_g']} g protein a day.")
-    else:
-        lines.append(f"Target {PLAN['calories_start']:,} kcal and {PLAN['protein_g']} g protein until calibration "
-                     "(needs 10+ logged days and a 2-week weight trend).")
-        lines.append(f"Garmin says you burned {fmt(this['total_cal'])} a day this week.")
 
     lines += ["", "COACH'S CALL", coach_call(this, t, trend, checks)]
 
     nxt = end + timedelta(days=1)
     nt = targets_for(nxt)
-    lines += ["", f"NEXT WEEK: {phase_for(nxt)['name']} · {nt['steps']:,} steps a day · {nt['weigh_ins']} weigh-ins · "
-              f"{nt['hard_sessions']} hard sessions · log food {nt['food_log_days']} days"]
+    lines += ["", f"NEXT WEEK: {phase_for(nxt)['name']} · {nt['steps']:,} steps a day (bike counts) · "
+              f"{nt['hard_sessions']} hard sessions · weigh in Mon, Wed, Fri, Sun"]
     for i in range(7):
         day = nxt + timedelta(days=i)
         s = session_for(day)
@@ -112,13 +110,9 @@ def build_email(data, end):
 
 def coach_call(w, t, trend, checks):
     missed = [c[0] for c in checks if not c[1]]
-    if not trend or trend["days_old"] > 14:
-        return "Weigh in tomorrow morning. Everything else in this plan steers off that number."
-    if "Food log" in missed:
-        return f"Food logging slipped ({w['food_days']} of {t['food_log_days']} days). Log before you eat, not after. Breakfast first."
     if "Steps" in missed:
         gap = t["steps"] - (w["steps"] or 0)
-        return f"You were {gap:,.0f} steps a day short. That is a 20-minute walk after dinner. Put it in the calendar for every weekday."
+        return f"You were {gap:,.0f} steps a day short. That is {max(10, round(gap / 100 / 5) * 5)} min of easy bike a day. After dinner, every weekday."
     if "Hard sessions" in missed:
         return "You skipped intensity. Tuesday's intervals are the first thing in the week. Pack the gym bag Monday night."
     if "Weigh-ins" in missed:

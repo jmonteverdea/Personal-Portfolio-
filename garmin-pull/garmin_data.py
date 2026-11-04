@@ -21,6 +21,8 @@ CHUNK_DAYS = 28
 DAILY_COLUMNS = [
     "date",
     "steps",
+    "bike_minutes",
+    "move_steps",
     "total_calories",
     "active_calories",
     "bmr_calories",
@@ -194,11 +196,19 @@ def weight_kg(item):
     return round(grams / 1000, 1) if isinstance(grams, (int, float)) else None
 
 
+BIKE_TYPES = ("cycling", "indoor_cycling", "virtual_ride", "road_biking", "spinning")
+BIKE_STEPS_PER_MIN = 100  # a bike minute counts toward the step target
+
+
 def build_day(day, summary, sleep, hrv, weight, acts):
+    bike = round(sum(a["minutes"] for a in acts if a["type"] in BIKE_TYPES), 1)
+    steps = dig(summary, "movement", "steps", "value")
     score = find(sleep, "overall") if sleep else None
     return {
         "date": day,
-        "steps": dig(summary, "movement", "steps", "value"),
+        "steps": steps,
+        "bike_minutes": bike,
+        "move_steps": None if steps is None else round(steps + bike * BIKE_STEPS_PER_MIN),
         "total_calories": dig(summary, "calories", "burnedTotal"),
         "active_calories": dig(summary, "calories", "burnedActive"),
         "bmr_calories": dig(summary, "calories", "burnedResting"),
