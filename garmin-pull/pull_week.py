@@ -98,6 +98,14 @@ def find(obj, key):
     return None
 
 
+def dig(obj, *path):
+    """Follow a key path inside the first object that has the first key, or return None."""
+    value = find(obj, path[0])
+    for key in path[1:]:
+        value = value.get(key) if isinstance(value, dict) else None
+    return value
+
+
 def num(value):
     return value if isinstance(value, (int, float)) else 0
 
@@ -120,12 +128,12 @@ def build_row(day, raw):
         "rem_sleep_hours": hours(find(sleep, "remSleepSeconds")),
         "sleep_score": blank(score.get("value")) if isinstance(score, dict) else "",
         "steps": blank(find(steps, "totalSteps")),
-        "total_calories": blank(find(summary, "totalKilocalories")),
-        "active_calories": blank(find(summary, "activeKilocalories")),
-        "bmr_calories": blank(find(summary, "bmrKilocalories")),
-        "resting_hr": blank(find(summary, "restingHeartRate")),
-        "avg_stress": blank(find(summary, "averageStressLevel")),
-        "max_stress": blank(find(summary, "maxStressLevel")),
+        "total_calories": blank(dig(summary, "calories", "burnedTotal")),
+        "active_calories": blank(dig(summary, "calories", "burnedActive")),
+        "bmr_calories": blank(dig(summary, "calories", "burnedResting")),
+        "resting_hr": blank(dig(summary, "heartRate", "restingValue")),
+        "avg_stress": blank(dig(summary, "stress", "avgLevel")),
+        "max_stress": blank(dig(summary, "stress", "maxLevel")),
         "activity_count": len(acts),
         "activity_minutes": round(sum(num(a.get("duration")) for a in acts) / 60, 1),
         "activity_calories": round(sum(num(a.get("calories")) for a in acts)),
