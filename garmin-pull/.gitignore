@@ -1,0 +1,14 @@
+# Virtual environment
+.venv/
+
+# Credentials. Never commit these.
+connect-personal-api-key
+*api-key*
+*bearer-token*.json
+.env
+
+# Personal health data
+output/
+
+# Python cache
+__pycache__/
