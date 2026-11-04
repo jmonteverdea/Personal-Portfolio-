@@ -36,6 +36,7 @@ DAILY_COLUMNS = [
     "floors",
     "calories_in",
     "sleep_hours",
+    "lights_out",
     "deep_sleep_hours",
     "rem_sleep_hours",
     "sleep_score",
@@ -181,6 +182,14 @@ def activity_row(a):
     }
 
 
+def clock(ms):
+    """Local wall-clock time HH:MM from Garmin's local-epoch milliseconds."""
+    if not isinstance(ms, (int, float)):
+        return None
+    from datetime import datetime, timezone
+    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).strftime("%H:%M")
+
+
 def consumed(summary):
     """Calories eaten, when a food log (Garmin or a synced app like MyFitnessPal) reports them."""
     cal = find(summary, "calories")
@@ -222,6 +231,7 @@ def build_day(day, summary, sleep, hrv, weight, acts):
         "floors": dig(summary, "movement", "floorsAscended", "value"),
         "calories_in": consumed(summary),
         "sleep_hours": hours(find(sleep, "sleepTimeSeconds")) if sleep else None,
+        "lights_out": clock(find(sleep, "sleepStartTimestampLocal")) if sleep else None,
         "deep_sleep_hours": hours(find(sleep, "deepSleepSeconds")) if sleep else None,
         "rem_sleep_hours": hours(find(sleep, "remSleepSeconds")) if sleep else None,
         "sleep_score": score.get("value") if isinstance(score, dict) else None,

@@ -11,15 +11,15 @@ INTERVALS = {
     "setup": {"Tue": "Easy 30 min. Hard sessions start next week.", "Sat": "Easy bike 30 min."},
     "rebuild": {
         "Tue": "Bike: 10 min easy, then 6 x 1 min hard (8/10, high resistance) with 2 min easy between, 5 min cool-down.",
-        "Sat": "Easy bike 40 min. One hard session a week in Rebuild.",
+        "Sat": "Easy bike 40 min. One hard session a week in Rebuild. The Norwegian 4x4 starts Nov 30.",
     },
     "build": {
         "Tue": "Bike: 10 min easy, then 6 x 2 min hard with 2 min easy between, 5 min cool-down.",
-        "Sat": "Bike: 10 min easy, 4 x 4 min hard with 3 min easy between, 5 min cool-down.",
+        "Sat": "Norwegian 4x4 on the bike: 10 min easy, 4 x 4 min at 85 to 95% max HR with 3 min easy between, 5 min cool-down.",
     },
     "push": {
         "Tue": "Bike: 10 min easy, then 8 x 2 min hard with 90 s easy between, 5 min cool-down.",
-        "Sat": "Bike: 10 min easy, 5 x 4 min hard with 3 min easy between, 10 min steady.",
+        "Sat": "Norwegian 4x4 on the bike: 10 min easy, 4 x 4 min at 90 to 95% max HR with 3 min easy between, 10 min steady.",
     },
 }
 

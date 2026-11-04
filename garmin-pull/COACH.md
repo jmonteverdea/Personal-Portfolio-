@@ -36,12 +36,35 @@ Step targets include bike credit: each bike minute counts as 100 steps.
 | Sat | **HARD:** bike intervals (from Build) | |
 | Sun | Long walk if dry, else easy bike 45 min | Yes, 7:48 AM + waist |
 
-Bike intervals grow by phase. Hard means 8/10 effort, high resistance, breathing too hard to talk:
+Bike intervals grow by phase. Saturday becomes your Norwegian 4x4 from Build. Hard means 8/10 effort, high resistance, breathing too hard to talk:
 - Rebuild Tue: 10 min easy, 6 x 1 min hard with 2 min easy, 5 min cool-down.
 - Build Tue: 6 x 2 min hard, 2 min easy. Build Sat: 4 x 4 min hard, 3 min easy.
 - Push Tue: 8 x 2 min hard, 90 s easy. Push Sat: 5 x 4 min hard, 3 min easy, 10 min steady.
 
 Record every bike session on the watch as Indoor Cycling so it counts.
+
+## Habits (from your performance system, cut to three)
+Your March tracker had 13 daily habits and no entries. Too many boxes kills a system. Three keystones, two checked by Garmin automatically:
+1. **Lights out by 10:30 PM** (Garmin checks it every morning). Median over 90 days: 11:09 PM. Nights by 10:30 gave about 0.5 h more sleep. Move to 9:30 once 10:30 holds for 3 weeks.
+2. **Daily movement target** (Garmin checks it at 3 PM).
+3. **Protein 160 g** (Ladder, reported Sunday).
+
+Identity: "I am a man who trains every day, protects his sleep, builds his career with intention, and shows up for his family." (Changed "every morning" to "every day": your data says you train at 6 PM. The identity should match the man, then raise him.)
+
+## Sunday report
+Send this every Sunday after the 7:48 AM weigh-in. It feeds the Monday review and the Diet Coach Log.
+
+```
+SUNDAY REPORT
+Weights: Mon __ / Wed __ / Fri __ / Sun __ kg (mornings only)
+Waist: __ cm
+Ladder weekly avg: __ kcal, __ g protein
+Alcohol: __ drinks
+Knee: ok / sore / bad
+Identity score (1-10): __
+Top win:
+Friction:
+```
 
 ## Rules
 1. Weigh in on the Wyze scale after the bathroom, before food, water or coffee. Afternoon readings do not count.

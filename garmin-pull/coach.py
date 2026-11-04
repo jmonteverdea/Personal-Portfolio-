@@ -17,6 +17,8 @@ from plan import PLAN, phase_for, session_for, targets_for, total_weeks, week_nu
 OUTPUT_DIR = Path(__file__).parent / "output"
 TZ = ZoneInfo("America/Denver")  # Garmin's day boundary for this account
 WAKE, BED = 7, 21  # hours that count for step pace
+LIGHTS_OUT = "22:30"  # step 1 toward the habit system's 9:30. Median was 11:09 PM over 90 days.
+IDENTITY = "I am a man who trains every day, protects his sleep, builds his career with intention, and shows up for his family."
 
 
 def readiness(row):
@@ -62,11 +64,18 @@ def morning(today):
     y_steps = yday.get("move_steps")
     y_ok = y_steps is not None and y_steps >= targets_for(today - timedelta(days=1))["steps"]
 
+    lo = now.get("lights_out")
+    if lo:
+        late = lo > LIGHTS_OUT or lo < "05:00"
+        h, m = map(int, lo.split(":"))
+        lo_txt = f"lights out {(h % 12) or 12}:{m:02d} {'AM' if h < 12 else 'PM'}" + (" (target 10:30, late)" if late else " (on target)")
+    else:
+        lo_txt = "no bedtime data"
     lines = [
         f"{level} · {today:%a %b %-d}: {s['session']}" + (" · weigh in" if s["weigh_in"] else ""),
         "",
         f"{head} · {phase['name']}",
-        f"Readiness {level}: {hrv}, {sleep}, {bb}.",
+        f"Readiness {level}: {hrv}, {sleep}, {bb}, {lo_txt}.",
         "",
         f"TODAY: {session}",
     ]
@@ -84,6 +93,7 @@ def morning(today):
     if yday.get("calories_in"):
         lines[-1] += f", {yday['calories_in']:,.0f} kcal logged"
     lines[-1] += "."
+    lines += ["", IDENTITY]
     return "\n".join(lines) + "\n"
 
 

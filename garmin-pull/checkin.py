@@ -149,9 +149,15 @@ def main():
     parser.add_argument("--end", type=date.fromisoformat, default=yesterday(), help="last day of the week (default: yesterday)")
     parser.add_argument("--history", type=int, default=90, help="days to pull (at least 42; default 90)")
     parser.add_argument("--dashboard", type=Path, help="also write dashboard data files to this folder")
+    parser.add_argument("--manual", type=Path, help="JSON list of {date, weight_kg} readings from the Wyze scale")
     args = parser.parse_args()
 
     data = fetch(args.end - timedelta(days=max(args.history, 42) - 1), args.end, with_profile=True)
+    if args.manual and args.manual.exists():
+        extra = [w for w in json.loads(args.manual.read_text()) if w.get("weight_kg")]
+        merged = {w["date"]: w for w in data["weights"]}
+        merged.update({w["date"]: {"date": w["date"], "weight_kg": float(w["weight_kg"])} for w in extra})
+        data["weights"] = [merged[d] for d in sorted(merged)]
     OUTPUT_DIR.mkdir(exist_ok=True)
     email = build_email(data, args.end)
     (OUTPUT_DIR / "checkin.txt").write_text(email)
