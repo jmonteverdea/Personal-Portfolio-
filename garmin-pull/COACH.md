@@ -58,7 +58,9 @@ Send this every Sunday after the 7:48 AM weigh-in. It feeds the Monday review an
 SUNDAY REPORT
 Weights: Mon __ / Wed __ / Fri __ / Sun __ kg (mornings only)
 Waist: __ cm
-Ladder weekly avg: __ kcal, __ g protein
+Protein 160 g hit: __ of 7 days
+Dinner on plan: __ of 7 days
+(Optional: screenshot of Ladder's nutrition screen or trend graph)
 Alcohol: __ drinks
 Knee: ok / sore / bad
 Identity score (1-10): __
