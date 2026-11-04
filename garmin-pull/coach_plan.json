@@ -1,0 +1,38 @@
+{
+  "goal_kg": 78.0,
+  "start": "2026-11-09",
+  "end": "2027-03-14",
+  "calories_start": 1900,
+  "protein_g": 160,
+  "phases": [
+    {"id": "setup", "name": "Setup", "start": "2026-11-04", "end": "2026-11-08",
+     "steps": 6000, "hard_sessions": 0, "vigorous": 0, "weigh_ins": 3, "food_log_days": 3,
+     "focus": "Weigh in, set up food logging, walk every day."},
+    {"id": "rebuild", "name": "Rebuild", "start": "2026-11-09", "end": "2026-11-29",
+     "steps": 6500, "hard_sessions": 1, "vigorous": 30, "weigh_ins": 5, "food_log_days": 7,
+     "focus": "Log every bite, weigh in most mornings, one hard session on Tuesday."},
+    {"id": "build", "name": "Build", "start": "2026-11-30", "end": "2027-01-10",
+     "steps": 7500, "hard_sessions": 2, "vigorous": 60, "weigh_ins": 3, "food_log_days": 5,
+     "focus": "Two hard sessions, calories set from your calibrated burn, hold through the holidays."},
+    {"id": "push", "name": "Push", "start": "2027-01-11", "end": "2027-03-14",
+     "steps": 8500, "hard_sessions": 2, "vigorous": 75, "weigh_ins": 3, "food_log_days": 5,
+     "focus": "Full volume. Every week counts toward 78 kg."}
+  ],
+  "week": {
+    "Mon": {"session": "Strength, 40 min", "hard": false, "weigh_in": true},
+    "Tue": {"session": "HARD: treadmill intervals at 6 PM", "hard": true, "weigh_in": false},
+    "Wed": {"session": "Walk 30 to 45 min", "hard": false, "weigh_in": true},
+    "Thu": {"session": "Lunch walk 30 min + strength", "hard": false, "weigh_in": false},
+    "Fri": {"session": "Easy run or walk", "hard": false, "weigh_in": true},
+    "Sat": {"session": "HARD: bike intervals", "hard": true, "weigh_in": false},
+    "Sun": {"session": "Long walk or hike outside, 60 min+", "hard": false, "weigh_in": false}
+  },
+  "rules": [
+    "Weigh in after the bathroom, before food or water.",
+    "During Rebuild, log every bite in MyFitnessPal (linked to Garmin Connect).",
+    "Protein first: 160 g a day.",
+    "Behind step pace at 3 PM: 20-minute walk after dinner. No debate.",
+    "Readiness red (HRV low or body battery peak under 50): swap the hard session for an easy one and move it to the next day.",
+    "Never miss twice. One bad day is noise, two is a pattern."
+  ]
+}

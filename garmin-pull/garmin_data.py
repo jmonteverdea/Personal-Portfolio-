@@ -5,6 +5,7 @@ The API key is found by the package itself (env var or key file). It is never pr
 """
 
 import sys
+import time
 from datetime import date, timedelta
 
 from garmin_personal_api import (
@@ -31,6 +32,7 @@ DAILY_COLUMNS = [
     "body_battery_max",
     "body_battery_min",
     "floors",
+    "calories_in",
     "sleep_hours",
     "deep_sleep_hours",
     "rem_sleep_hours",
@@ -104,10 +106,15 @@ class Session:
         self.auth, self.client, self.api_key = auth, client, api_key
         self.refreshed = False
 
-    def call(self, label, fn, *args, **kwargs):
+    def call(self, label, fn, *args, _tries=0, **kwargs):
         try:
             return fn(*args, **kwargs)
         except HttpError as e:
+            if e.status_code == 429 and _tries < 5:
+                wait = 2 ** (_tries + 1)
+                print(f"rate limited on {label}, waiting {wait}s", file=sys.stderr)
+                time.sleep(wait)
+                return self.call(label, fn, *args, _tries=_tries + 1, **kwargs)
             if e.status_code == 401 and not self.refreshed:
                 print("401 received, refreshing token and retrying once", file=sys.stderr)
                 self.refreshed = True
@@ -172,6 +179,16 @@ def activity_row(a):
     }
 
 
+def consumed(summary):
+    """Calories eaten, when a food log (Garmin or a synced app like MyFitnessPal) reports them."""
+    cal = find(summary, "calories")
+    if isinstance(cal, dict):
+        for key, value in cal.items():
+            if "consum" in key.lower() and isinstance(value, (int, float)) and value > 0:
+                return value
+    return None
+
+
 def weight_kg(item):
     grams = dig(item, "latestWeight", "weight") if item else None
     return round(grams / 1000, 1) if isinstance(grams, (int, float)) else None
@@ -193,6 +210,7 @@ def build_day(day, summary, sleep, hrv, weight, acts):
         "body_battery_max": dig(summary, "bodyBattery", "maxValue"),
         "body_battery_min": dig(summary, "bodyBattery", "minValue"),
         "floors": dig(summary, "movement", "floorsAscended", "value"),
+        "calories_in": consumed(summary),
         "sleep_hours": hours(find(sleep, "sleepTimeSeconds")) if sleep else None,
         "deep_sleep_hours": hours(find(sleep, "deepSleepSeconds")) if sleep else None,
         "rem_sleep_hours": hours(find(sleep, "remSleepSeconds")) if sleep else None,
