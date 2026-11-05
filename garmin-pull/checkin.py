@@ -11,7 +11,7 @@ import json
 from datetime import date, timedelta
 from pathlib import Path
 
-from coach_logic import calibrate, week_stats, weight_trend
+from coach_logic import calibrate, galpin_floor, week_stats, weight_trend
 from garmin_data import ACTIVITY_COLUMNS, DAILY_COLUMNS, fetch, yesterday
 from plan import PLAN, phase_for, plan_rows, session_for, targets_for, total_weeks, week_number
 
@@ -54,6 +54,8 @@ def build_email(data, end):
         ("Weigh-ins", None, "Tracked on the Wyze scale and in the Diet Coach Log."),
         ("Hard sessions", this["hard_sessions"] >= t["hard_sessions"],
          f"{this['hard_sessions']} of {t['hard_sessions']}. {this['vigorous']:.0f} vigorous min (target {t['vigorous']})."),
+        ("Aerobic minutes", this["aerobic"] >= t["zone2"],
+         f"{this['aerobic']:.0f} of {t['zone2']} (Garmin intensity minutes; easy bike at talking pace counts)."),
         ("Sleep", (this["sleep"] or 0) >= t["sleep"], f"{fmt(this['sleep'], 1, ' h')} a night{delta(this['sleep'], prev['sleep'], 1, ' h')}."),
     ]
     if t["hard_sessions"] == 0:
@@ -71,6 +73,12 @@ def build_email(data, end):
         f"SCORE {hit}/{len(checks)}",
     ]
     lines += [f"{'OK  ' if ok else 'MISS'}  {name}: {text}" for name, ok, text in checks]
+
+    week_rows = window(end)
+    week_dates = {r["date"] for r in week_rows}
+    floor_checks, floor_hit = galpin_floor(week_rows, [a for a in data["activities"] if a["date"] in week_dates])
+    lines += ["", f"MINIMUM WEEK (Galpin 5-4-3-2-1): {floor_hit}/5",
+              " · ".join(f"{name} {got}/{need}" for name, got, need in floor_checks)]
 
     lines += ["", "WEIGHT"]
     if not trend or trend["days_old"] > 14:

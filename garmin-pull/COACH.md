@@ -15,6 +15,22 @@ Coach: Claude. Athlete: Jorge. Data: Garmin, every day.
 4. Thursday is your weakest day (5,900). 6 PM is when you actually train.
 5. Sleep is already strong (8 h). It is not the bottleneck. Protect it.
 
+## Philosophy: Galpin and Huberman, applied
+What we adopt, and how this plan uses it. Sources: Huberman Lab guest series with Dr. Andy Galpin, Huberman's sleep toolkit and fitness protocol.
+
+1. **Sleep first.** Both put sleep ahead of every supplement or hack. Ours: lights out 10:30, then 9:30. Same wake time within an hour, every day, weekends included.
+2. **Morning light.** Outside within 60 minutes of waking: about 10 minutes if bright, 20 to 30 if overcast (Victoria in winter: assume overcast). Indoor light is too dim. Walk it and it counts as steps.
+3. **Coffee 90 minutes after waking.** Low cost, worth testing. Weaker evidence than the rest, so it is a nudge, not a rule.
+4. **Zone 2 is the base.** Galpin: 150 to 180 minutes a week, split over 3 to 4 sessions or woven into the day. Easy bike rides are this. Test: full sentences, nose breathing. Our ramp: 60, 90, 120, 150 a week by phase, tracked through Garmin intensity minutes.
+5. **A small dose of hard work.** Galpin's minimum is 5 to 6 minutes truly hard a week. Tuesday's 6 x 1 min is exactly that. The Norwegian 4x4 on Saturdays from Build raises VO2 max, the strongest fitness marker for longevity.
+6. **Strength twice a week, minimum.** Huberman runs 3 resistance days; Galpin's floor is 2. Ours: Monday and Thursday. Muscle protects metabolism while you diet.
+7. **Protein drives the cut.** Galpin starts near 1 g per pound. We hold 160 g (about 1.8 g per kg), inside the evidence-backed range. No change.
+8. **The minimum week (Galpin's 5-4-3-2-1).** On a bad week, the floor is: active 5 days, structured exercise 4, sweat 3, strength 2, high heart rate 1. The Monday review scores it.
+9. **Down-regulate after hard sessions.** 3 to 5 minutes of slow breathing, exhale twice as long as the inhale. Recovery starts when the session ends.
+10. **Test, don't guess.** Baseline this Sunday, retest Mar 14: morning weight average, waist, dead hang (seconds), max push-ups, resting heart rate and HRV (Garmin, 7-day average).
+
+What we skip: hacks with thin evidence (cold plunges for fat loss, supplement stacks). Big rocks only. If cold exposure appeals, keep it 4+ hours away from strength sessions; it can blunt muscle gains.
+
 ## Phases
 Step targets include bike credit: each bike minute counts as 100 steps.
 

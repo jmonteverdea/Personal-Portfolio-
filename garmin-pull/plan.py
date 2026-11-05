@@ -68,6 +68,7 @@ def targets_for(day):
         "weigh_ins": p["weigh_ins"],
         "hard_sessions": p["hard_sessions"],
         "food_log_days": p["food_log_days"],
+        "zone2": p.get("zone2_minutes", 150),
         "sleep": 7.0,
     }
 

@@ -81,6 +81,10 @@ def morning(today):
     ]
     if s.get("hard") and level != "RED" and s.get("detail"):
         lines.append(s["detail"])
+        lines.append("After: 3 to 5 min of slow breathing, exhale twice as long as the inhale.")
+    elif not s.get("hard"):
+        lines.append("Easy means Zone 2: you can talk in full sentences, breathing through your nose.")
+    lines.append("Light: outside within 60 min of waking, 20 to 30 min on a grey day. First coffee 90 min after waking.")
     if s["weigh_in"]:
         lines.append("Weigh in now on the Wyze scale: after the bathroom, before food, water or coffee." + (" Measure your waist." if today.weekday() == 6 else ""))
     lines.append(f"Steps target {t['steps']:,} (bike minutes count x100). Food: {PLAN['calories_start']:,} kcal, {PLAN['protein_g']} g protein, per the Diet Coach Log.")

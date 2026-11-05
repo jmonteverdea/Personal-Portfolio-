@@ -15,7 +15,8 @@
       "vigorous": 0,
       "weigh_ins": 4,
       "food_log_days": 0,
-      "focus": "Morning weigh-ins on the Wyze scale, bike or walk every day."
+      "focus": "Morning weigh-ins on the Wyze scale, bike or walk every day.",
+      "zone2_minutes": 60
     },
     {
       "id": "rebuild",
@@ -27,7 +28,8 @@
       "vigorous": 30,
       "weigh_ins": 4,
       "food_log_days": 0,
-      "focus": "Weigh in Mon, Wed, Fri, Sun mornings. One hard bike session on Tuesday. Hit the step target with bike credit."
+      "focus": "Weigh in Mon, Wed, Fri, Sun mornings. One hard bike session on Tuesday. Hit the step target with bike credit.",
+      "zone2_minutes": 90
     },
     {
       "id": "build",
@@ -39,7 +41,8 @@
       "vigorous": 60,
       "weigh_ins": 4,
       "food_log_days": 0,
-      "focus": "Two hard bike sessions. Calories follow the Diet Coach Log plateau rule. Hold through the holidays."
+      "focus": "Two hard bike sessions. Calories follow the Diet Coach Log plateau rule. Hold through the holidays.",
+      "zone2_minutes": 120
     },
     {
       "id": "push",
@@ -51,7 +54,8 @@
       "vigorous": 75,
       "weigh_ins": 4,
       "food_log_days": 0,
-      "focus": "Full volume. Every week counts toward 78 kg."
+      "focus": "Full volume. Every week counts toward 78 kg.",
+      "zone2_minutes": 150
     }
   ],
   "week": {
@@ -101,5 +105,15 @@
   ],
   "fiber_g": 32,
   "nutrition_source": "Diet Coach Log (claude.ai artifact). Calories and the plateau rule are set there, not here.",
-  "bike_steps_per_min": 100
+  "bike_steps_per_min": 100,
+  "principles": {
+    "sleep_first": "Sleep is the first lever (Galpin, Huberman). Lights out 10:30, then 9:30.",
+    "morning_light": "Outside within 60 min of waking: 10 min if bright, 20 to 30 min if overcast. Walking it counts as steps.",
+    "caffeine": "First coffee 90 min after waking.",
+    "zone2": "Easy aerobic minutes build toward 150 a week (Galpin's floor is 150 to 180). Conversational pace, nose breathing.",
+    "hard_dose": "A small dose of hard work goes far: 5 to 6 min truly hard a week is the minimum (Galpin).",
+    "floor_5_4_3_2_1": "Minimum week: active 5 days, structured exercise 4, sweat 3, strength 2, high heart rate 1 (Galpin).",
+    "down_regulate": "3 to 5 min of slow breathing, long exhales, right after hard sessions.",
+    "test": "Retest every 6 months, rested, easiest tests first."
+  }
 }

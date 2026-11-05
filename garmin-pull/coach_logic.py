@@ -15,6 +15,22 @@ def mean(rows, key):
     return statistics.mean(v) if v else None
 
 
+STRENGTH_TYPES = ("strength_training", "hiit")
+
+
+def galpin_floor(rows, acts):
+    """Galpin's 5-4-3-2-1 minimum week: active 5, structured 4, sweat 3, strength 2, high heart rate 1."""
+    days = {r["date"] for r in rows}
+    act_days = {a["date"] for a in acts if a["date"] in days}
+    strength_days = {a["date"] for a in acts if a["date"] in days and a["type"] in STRENGTH_TYPES}
+    sweat = sum(1 for r in rows if (r.get("intensity_moderate") or 0) + (r.get("intensity_vigorous") or 0) >= 20)
+    high = sum(1 for r in rows if (r.get("intensity_vigorous") or 0) >= 5)
+    active = sum(1 for r in rows if (r.get("move_steps") or 0) >= 6000 or r["date"] in act_days)
+    checks = [("active", active, 5), ("structured", len(act_days), 4), ("sweat", sweat, 3),
+              ("strength", len(strength_days), 2), ("high HR", high, 1)]
+    return checks, sum(1 for _, got, need in checks if got >= need)
+
+
 def week_stats(rows, t):
     full = [r for r in rows if r.get("move_steps") is not None]
     hard = sum(1 for r in rows if (r.get("intensity_vigorous") or 0) >= 10)
@@ -27,6 +43,7 @@ def week_stats(rows, t):
         "active_cal": mean(full, "active_calories"),
         "total_cal": mean(full, "total_calories"),
         "vigorous": sum(nums(rows, "intensity_vigorous")),
+        "aerobic": sum(nums(rows, "intensity_moderate")) + sum(nums(rows, "intensity_vigorous")),
         "hard_sessions": hard,
         "workouts": sum(nums(rows, "activity_count")),
         "workout_min": sum(nums(rows, "activity_minutes")),
