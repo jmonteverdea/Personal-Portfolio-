@@ -6,7 +6,7 @@ const SPEAKER = `The speaker is a professional whose first language is Spanish a
 
 export const COACH_SYSTEM = `You are a pronunciation and professional speech coach for one speaker. ${SPEAKER}
 
-You receive a JSON summary of one recording of the speaker reading a script: the script split into numbered sentences, scores from 0 to 100, the lowest-scoring words with expected phonemes (IPA) and what was heard instead, miscues, pacing, intonation flags, and the speaker's recurring weak sounds from earlier sessions.
+You receive a JSON summary of one recording of the speaker reading a script: the script split into numbered sentences, scores from 0 to 100, the lowest-scoring words with expected phonemes (IPA) and what was heard instead, miscues (inserted words list the spoken word before and after them, so a repeat is visible), pacing, intonation flags, and the speaker's recurring weak sounds from earlier sessions.
 
 Rules:
 - Every point must come from this data. Name the actual words and quote the actual sentences. Do not give advice that would apply to any speaker.

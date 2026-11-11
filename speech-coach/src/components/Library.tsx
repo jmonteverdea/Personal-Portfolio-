@@ -7,6 +7,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { toAppError } from "@/lib/errors";
 import { modeDescription } from "@/lib/mode";
+import { matchScenarios, SCENARIOS } from "@/lib/scenarios";
 import { actions, useStore } from "@/lib/store";
 import { hasDigits, normalizeWords } from "@/lib/text";
 import { SCRIPT_TAGS, type Script, type ScriptTag } from "@/lib/types";
@@ -127,14 +128,9 @@ function ScenarioGenerator({ onDraft, onClose }: { onDraft: (draft: Draft) => vo
 
   return (
     <Card>
-      <CardTitle>Generate a scenario</CardTitle>
+      <CardTitle>{anthropic ? "Generate a scenario" : "Scenario library"}</CardTitle>
       {!anthropic ? (
-        <div className="space-y-3">
-          <Notice tone="warn" title="Needs an Anthropic key">
-            Scenario generation uses Claude. Add ANTHROPIC_API_KEY to .env.local and restart the dev server.
-          </Notice>
-          <Button onClick={onClose}>Close</Button>
-        </div>
+        <BuiltInScenarios onDraft={onDraft} onClose={onClose} />
       ) : (
         <div className="space-y-3">
           <label className="block">
@@ -161,6 +157,52 @@ function ScenarioGenerator({ onDraft, onClose }: { onDraft: (draft: Draft) => vo
         </div>
       )}
     </Card>
+  );
+}
+
+/** No AI key: search a built-in library of work scenarios instead of generating one. */
+function BuiltInScenarios({ onDraft, onClose }: { onDraft: (draft: Draft) => void; onClose: () => void }) {
+  const [query, setQuery] = useState("");
+  const typed = query.trim().length >= 2;
+  const matches = typed ? matchScenarios(query, 4) : SCENARIOS;
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted">
+        Built-in scenarios, free and with no AI. Pick one and edit it to fit your situation.
+      </p>
+      <label className="block">
+        <span className="mb-1 block text-sm font-medium">What is the situation?</span>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Push back on a deadline with a VP"
+          className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm"
+        />
+      </label>
+      {matches.length === 0 ? (
+        <Notice>
+          No built-in scenario matches that. Try other words such as deadline, feedback, raise, client or presentation,
+          or clear the box to see all {SCENARIOS.length}.
+        </Notice>
+      ) : (
+        <ul className="max-h-80 divide-y divide-line overflow-y-auto rounded-xl border border-line">
+          {matches.map((s) => (
+            <li key={s.title} className="flex flex-wrap items-center justify-between gap-3 p-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">
+                  {s.title} <Pill tone="accent">{s.tag}</Pill>
+                </p>
+                <p className="mt-0.5 line-clamp-1 text-xs text-muted">{s.script}</p>
+              </div>
+              <Button size="sm" onClick={() => onDraft({ title: s.title, text: s.script, tags: [s.tag] })}>
+                Use this
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button onClick={onClose}>Close</Button>
+    </div>
   );
 }
 
@@ -238,7 +280,7 @@ export function Library() {
           </Button>
           <Button onClick={() => setPanel({ kind: "scenario" })}>
             <Wand2 className="h-4 w-4" aria-hidden />
-            Generate scenario
+            {config.anthropic ? "Generate scenario" : "Scenario library"}
           </Button>
           <Button variant="primary" onClick={() => openEditor(EMPTY_DRAFT)}>
             <Plus className="h-4 w-4" aria-hidden />
@@ -247,7 +289,7 @@ export function Library() {
         </div>
       </div>
 
-      {!(config.azure && config.anthropic) && <Notice tone={config.azure ? "info" : "warn"}>{modeDescription(config)}</Notice>}
+      {!config.azure && <Notice tone="warn">{modeDescription(config)}</Notice>}
 
       {panel?.kind === "editor" && <ScriptEditor key={panel.key} initial={panel.draft} onDone={() => setPanel(null)} />}
       {panel?.kind === "scenario" && <ScenarioGenerator onDraft={openEditor} onClose={() => setPanel(null)} />}

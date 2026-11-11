@@ -31,8 +31,8 @@ describe("mode detection", () => {
     expect(detectMode({ azure: false, anthropic: false })).toBe("transcript");
   });
   it("says what is unavailable", () => {
-    expect(modeDescription({ azure: false, anthropic: false })).toMatch(/Phoneme scoring and coaching are unavailable/);
-    expect(modeDescription({ azure: true, anthropic: false })).toMatch(/Coaching is off/);
+    expect(modeDescription({ azure: false, anthropic: false })).toMatch(/Phoneme scoring is unavailable/);
+    expect(modeDescription({ azure: true, anthropic: false })).toMatch(/free built-in coach/);
   });
 });
 
@@ -40,7 +40,10 @@ describe("built-in drills", () => {
   it("covers the usual Spanish-speaker problem sounds", () => {
     for (const p of ["v", "θ", "ð", "ɪ", "i", "z", "t", "d", "ʊ"]) expect(builtInDrill(p)?.script.length).toBeGreaterThan(80);
   });
-  it("returns null for sounds it has no drill for", () => {
+  it("builds a drill from my missed words for any other sound", () => {
     expect(builtInDrill("ʒ")).toBeNull();
+    const drill = builtInDrill("ʒ", ["usual", "measure", "usual"]);
+    expect(drill?.title).toBe("Drill /ʒ/: usual, measure");
+    expect(drill?.script.match(/usual/g)).toHaveLength(4);
   });
 });

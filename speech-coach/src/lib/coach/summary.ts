@@ -96,6 +96,14 @@ export function buildCoachSummary(result: AssessmentResult, recurring: readonly 
     return null;
   };
 
+  const nextSpoken = (index: number): string | null => {
+    for (let i = index + 1; i < result.words.length; i++) {
+      const w = byIndex.get(i);
+      if (w && w.status !== "omission") return bare(w.text);
+    }
+    return null;
+  };
+
   const monotone = new Set<number>();
   for (const w of said) if (w.prosody?.monotone && w.sentenceIndex !== null) monotone.add(w.sentenceIndex + 1);
 
@@ -113,7 +121,7 @@ export function buildCoachSummary(result: AssessmentResult, recurring: readonly 
       inserted: result.words
         .filter((w) => w.status === "insertion")
         .slice(0, 40)
-        .map((w) => ({ word: bare(w.text), after: previousSpoken(w.index) })),
+        .map((w) => ({ word: bare(w.text), after: previousSpoken(w.index), before: nextSpoken(w.index) })),
       substituted: result.words
         .filter((w) => w.status === "mispronounced" && w.spoken !== null)
         .slice(0, 40)

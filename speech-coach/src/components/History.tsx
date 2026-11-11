@@ -31,14 +31,14 @@ function WeakSounds({ sounds }: { sounds: WeakSound[] }) {
         try {
           draft = await api.drill(sound.phoneme, sound.examples);
         } catch (e) {
-          draft = builtInDrill(sound.phoneme);
+          draft = builtInDrill(sound.phoneme, sound.examples);
           if (!draft) throw e;
         }
       } else {
-        draft = builtInDrill(sound.phoneme);
+        draft = builtInDrill(sound.phoneme, sound.examples);
       }
       if (!draft) {
-        setError(`There is no built-in drill for /${sound.phoneme}/. Add ANTHROPIC_API_KEY to generate drills for any sound.`);
+        setError(`There is no built-in drill for /${sound.phoneme}/ and no example words to build one from yet.`);
         return;
       }
       const script = actions.saveScript({ title: draft.title, text: draft.script, tags: ["drill"] });
@@ -97,7 +97,7 @@ function WeakSounds({ sounds }: { sounds: WeakSound[] }) {
       <p className="text-xs text-muted">
         {anthropic
           ? "Drills are written by Claude around the words you missed."
-          : "No Anthropic key: drills come from a built-in set for common problem sounds."}
+          : "Drills come from a built-in set, or are built from the words you missed. Free, no AI."}
       </p>
     </div>
   );

@@ -13,8 +13,8 @@ export const MODE_LABEL: Record<AppMode, string> = {
 
 export function modeDescription(config: AppConfig): string {
   if (config.azure && config.anthropic) return "Azure scoring and Claude coaching are both on.";
-  if (config.azure) return "Azure scoring is on. Coaching is off: no Anthropic key.";
+  if (config.azure) return "Azure scoring is on. Coaching comes from the free built-in coach (no Anthropic key).";
   if (config.anthropic)
     return "No Azure key: recordings get a transcript and word diff only. Phoneme scoring is unavailable. Coaching is on.";
-  return "No keys set: recordings get a transcript and word diff only. Phoneme scoring and coaching are unavailable. Load the sample result to see every screen.";
+  return "No Azure key: recordings get a transcript and word diff only. Phoneme scoring is unavailable. Load the sample result to see every screen.";
 }

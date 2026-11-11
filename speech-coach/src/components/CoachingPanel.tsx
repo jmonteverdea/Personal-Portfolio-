@@ -1,9 +1,10 @@
 "use client";
 
 import { MessageSquareText, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { Coaching } from "@/lib/coach/schema";
+import { buildLocalCoaching } from "@/lib/coach/local";
 import { buildCoachSummary } from "@/lib/coach/summary";
 import { toAppError } from "@/lib/errors";
 import { aggregateWeakSounds, analyticsSessions } from "@/lib/history";
@@ -116,18 +117,24 @@ function SentenceNotes({ notes }: { notes: { sentence: string; note: string }[] 
 export function CoachingPanel({ result }: { result: AssessmentResult }) {
   const { anthropic } = useConfig();
   const { coaching: stored, sessions } = useStore();
-  const coaching = stored[result.id];
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isDemo = result.source === "demo";
+
+  // History without this take, so "recurring" means earlier sessions.
+  const summary = useMemo(() => {
+    const earlier = analyticsSessions(sessions).filter((s) => s.id !== result.id);
+    return buildCoachSummary(result, aggregateWeakSounds(earlier));
+  }, [result, sessions]);
+  // No Anthropic key: the built-in coach works from the same summary, instantly and for free.
+  const builtIn = useMemo(() => (anthropic ? null : buildLocalCoaching(summary)), [anthropic, summary]);
+  const usingBuiltIn = !stored[result.id] && builtIn !== null;
+  const coaching = stored[result.id] ?? builtIn ?? undefined;
 
   const request = async () => {
     setBusy(true);
     setError(null);
     try {
-      // History without this take, so "recurring" means earlier sessions.
-      const earlier = analyticsSessions(sessions).filter((s) => s.id !== result.id);
-      const summary = buildCoachSummary(result, aggregateWeakSounds(earlier));
       actions.saveCoaching(result.id, await api.coach(summary));
     } catch (e) {
       setError(toAppError(e).message);
@@ -141,7 +148,9 @@ export function CoachingPanel({ result }: { result: AssessmentResult }) {
       <CardTitle
         aside={
           coaching &&
-          (isDemo ? (
+          (usingBuiltIn ? (
+            <Pill tone="accent">Built-in coach: free, no AI</Pill>
+          ) : isDemo ? (
             <Pill tone="amber">Sample coaching, not generated live</Pill>
           ) : anthropic ? (
             <Button size="sm" variant="ghost" loading={busy} onClick={() => void request()}>
@@ -163,7 +172,15 @@ export function CoachingPanel({ result }: { result: AssessmentResult }) {
       )}
 
       {coaching ? (
-        <CoachingView coaching={coaching} />
+        <>
+          <CoachingView coaching={coaching} />
+          {usingBuiltIn && (
+            <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-muted">
+              Written by fixed rules from your scores, on your device. Nothing was sent anywhere and it costs nothing.
+              It does not suggest rewordings. An optional ANTHROPIC_API_KEY swaps in coaching written by Claude.
+            </p>
+          )}
+        </>
       ) : busy ? (
         <div role="status" className="space-y-3 py-2" aria-label="Claude is reviewing your take">
           <p className="text-sm text-muted">Claude is reviewing your take. This usually takes 10 to 30 seconds.</p>
@@ -171,11 +188,6 @@ export function CoachingPanel({ result }: { result: AssessmentResult }) {
             <div key={w} className="h-3 animate-pulse rounded bg-stone-100" style={{ width: `${w}%` }} />
           ))}
         </div>
-      ) : !anthropic ? (
-        <Notice tone="warn" title="Coaching is off">
-          ANTHROPIC_API_KEY is not set, so there is no written coaching for this take. Everything above still works. Add
-          the key to .env.local and restart the dev server to turn it on.
-        </Notice>
       ) : (
         !error && (
           <div className="flex flex-col items-start gap-3">

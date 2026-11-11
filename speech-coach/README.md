@@ -18,7 +18,7 @@ Restart `npm run dev` after changing `.env.local`.
 | --- | --- |
 | `AZURE_SPEECH_KEY` | Key for an Azure Speech resource. Turns on phoneme scoring. |
 | `AZURE_SPEECH_REGION` | That resource's region in short form, for example `eastus`. |
-| `ANTHROPIC_API_KEY` | Turns on coaching, scenario generation and generated drills. |
+| `ANTHROPIC_API_KEY` | Optional. Swaps the free built-in coach for coaching written by Claude, and turns on AI scenario and drill generation. |
 | `ANTHROPIC_MODEL` | Optional. Defaults to `claude-sonnet-5-5`. |
 
 ### Where to get an Azure Speech key
@@ -35,11 +35,17 @@ The mode is detected from `.env.local` and shown as a badge in the header.
 
 | Mode | When | What you get |
 | --- | --- | --- |
-| **Full** | Azure key and region set | Accuracy, fluency, completeness and prosody scores, per-phoneme IPA scores, word timestamps, pacing, long pauses, word replay, Azure reference voice. Coaching too if the Anthropic key is set. Without it the badge reads "Full · coaching off". |
+| **Full** | Azure key and region set | Accuracy, fluency, completeness and prosody scores, per-phoneme IPA scores, word timestamps, pacing, long pauses, word replay, Azure reference voice. Coaching comes from Claude if the Anthropic key is set, and from the free built-in coach if not (badge reads "Full · built-in coach"). |
 | **Transcript-only** | No Azure key | Your browser's speech recognition gives a transcript. You get the same skipped/added word comparison and an estimated pace. No scores are shown, because none were measured. |
 | **Demo** | Any time, via **Load sample result** | A sample take, sample coaching and four sample sessions, so every screen works with zero keys. Demo data is labeled and can be removed from the Progress page. |
 
-If the Anthropic key is missing, the coaching panel says so and everything else still works. "Drill this sound" falls back to a built-in set of drills.
+### Running it for free
+
+The Anthropic key is optional. Without it the app uses a **built-in coach**: fixed rules that turn your scores into top priorities, a physical instruction and minimal pair for each weak sound, and pacing and intonation notes on specific sentences. It runs in your browser, sends nothing anywhere and costs nothing. It does not suggest rewordings.
+
+Also free without the Anthropic key: a **scenario library** of 12 ready work scripts you can search and edit, and **drills** from a built-in set or built from the words you missed.
+
+Azure Speech has a free F0 tier (5 audio hours a month at the time of writing), so Azure scoring plus the built-in coach is a zero-cost setup.
 
 ## Privacy: what leaves your machine
 
@@ -69,7 +75,8 @@ src/lib/diff.ts            Word alignment: correct, mispronounced, omission, ins
 src/lib/scoring.ts         Aggregate scores across segments.
 src/lib/pacing.ts          Words per minute and long pauses.
 src/lib/history.ts         Session summaries, weak-sound ranking, export and import.
-src/lib/coach/             Request summary, prompts, response schema and validation.
+src/lib/coach/             Request summary, prompts, response schema and validation, built-in coach.
+src/lib/scenarios.ts       Built-in scenario library.
 src/lib/speech/            Browser side: Azure session, Web Speech session, TTS, replay.
 src/lib/fixtures/          Azure-shaped fixture, demo result and demo coaching.
 ```
@@ -100,7 +107,9 @@ Choices made without asking, so you can overrule them.
 
 **Token handling.** The server caches the Azure token for 9 minutes. The browser swaps a fresh token into the running recognizer at the 9-minute mark, one minute before Azure expires it. If Azure still rejects the token, the take stops with a clear message and whatever was captured is kept.
 
-**Coaching is on request.** You press **Get coaching** on a result. It is not automatic, so you do not pay for a Claude call on every throwaway take.
+**Coaching is on request when it costs money.** With an Anthropic key you press **Get coaching**, so you do not pay for a Claude call on every throwaway take. Without a key the built-in coach shows immediately.
+
+**Built-in coach.** Deterministic rules over the same compact summary Claude gets, in `src/lib/coach/local.ts`. It covers about 40 English sounds with instructions written for a Spanish speaker. At most two of the three priorities are sounds, so a pacing or accuracy problem can take the third.
 
 **Coach response validation.** The request uses structured outputs with a JSON schema, and the reply is then validated again with Zod (1 to 3 priorities, every sound fix has example words, an instruction, a minimal pair and a drill). One retry with the validation error, then a visible error. No server-side model fallback is configured: if Claude declines, you see an error.
 
@@ -156,6 +165,6 @@ Everything else is covered by unit tests and a headless browser run. These need 
 **Other modes**
 
 21. Remove the Azure key and restart. Badge reads **Transcript-only**, a take produces a transcript and word comparison, and no scores appear anywhere.
-22. Remove the Anthropic key and restart. The coaching panel says coaching is off. Everything else works.
+22. Remove the Anthropic key and restart. The coaching panel shows the built-in coach right away, labeled "free, no AI". "Generate scenario" becomes "Scenario library".
 23. Reload a results page. Scores are still there, and the audio player explains that the recording was not kept.
 24. On Progress, **Export JSON**, then **Clear history**, then **Import JSON**. Your sessions come back.

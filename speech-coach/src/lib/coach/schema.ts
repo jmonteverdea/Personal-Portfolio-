@@ -79,7 +79,7 @@ export const CoachSummarySchema = z.object({
     .max(10),
   miscues: z.object({
     omitted: z.array(z.object({ word: z.string().max(60), sentence: z.number().int() })).max(40),
-    inserted: z.array(z.object({ word: z.string().max(60), after: z.string().max(60).nullable() })).max(40),
+    inserted: z.array(z.object({ word: z.string().max(60), after: z.string().max(60).nullable(), before: z.string().max(60).nullable() })).max(40),
     substituted: z.array(z.object({ expected: z.string().max(60), said: z.string().max(60) })).max(40),
   }),
   pacing: z.object({

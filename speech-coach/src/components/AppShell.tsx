@@ -26,7 +26,7 @@ export function ModeBadge() {
       <span className={`h-1.5 w-1.5 rounded-full ${mode === "full" ? "bg-emerald-600" : "bg-amber-600"}`} aria-hidden />
       <span className="sr-only">Mode: </span>
       {MODE_LABEL[mode]}
-      {mode === "full" && !config.anthropic && <span className="font-normal opacity-80">· coaching off</span>}
+      {mode === "full" && !config.anthropic && <span className="font-normal opacity-80">· built-in coach</span>}
       {mode === "transcript" && <span className="font-normal opacity-80">· no phoneme scores</span>}
     </span>
   );

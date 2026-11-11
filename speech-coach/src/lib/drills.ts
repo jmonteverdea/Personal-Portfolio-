@@ -114,7 +114,19 @@ const DRILLS: Record<string, BuiltInDrill> = {
 /** Azure reports r-colored vowels under their own symbols. */
 const ALIASES: Record<string, string> = { ɹ: "r", ɚ: "r", ɝ: "r" };
 
-export function builtInDrill(phoneme: string): BuiltInDrill | null {
+/**
+ * A drill for one sound. Uses the built-in script when there is one. For any
+ * other sound it builds a short repetition drill from the words I missed.
+ */
+export function builtInDrill(phoneme: string, examples: readonly string[] = []): BuiltInDrill | null {
   const key = phoneme.replace(/[/\s]/g, "");
-  return DRILLS[key] ?? DRILLS[ALIASES[key] ?? ""] ?? null;
+  const ready = DRILLS[key] ?? DRILLS[ALIASES[key] ?? ""];
+  if (ready) return ready;
+  const words = [...new Set(examples.map((w) => w.trim()).filter(Boolean))].slice(0, 4);
+  if (words.length === 0) return null;
+  const once = words.join(". ");
+  return {
+    title: `Drill /${key}/: ${words.slice(0, 3).join(", ")}`,
+    script: `${once}. ${once}. Now slowly. ${once}. Now at normal speed. ${once}.`,
+  };
 }
