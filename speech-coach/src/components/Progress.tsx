@@ -10,6 +10,8 @@ import { soundDelta } from "@/lib/learning/bests";
 import { weekRhythm } from "@/lib/learning/rhythm";
 import { learning, useLearning } from "@/lib/learning/store";
 import { exportableLearning, parseLearningImport } from "@/lib/learning/transfer";
+import { modes, useModes } from "@/lib/modes/store";
+import { exportableModes, parseModesImport } from "@/lib/modes/transfer";
 import { actions, useStore } from "@/lib/store";
 import { band, BAND_TEXT, Button, Delta, formatDate, Label, LinkButton, Loading, MasteryGlyph, Note, PageHeader, Plate, Sound, StateBlock } from "./ds/ui";
 import { SoundMap } from "./SoundMap";
@@ -19,6 +21,7 @@ export function Progress() {
   const atlas = useAtlas();
   const { sessions, scripts, results } = useStore();
   const learn = useLearning();
+  const extra = useModes();
   const [metric, setMetric] = useState<Metric>("overall");
   const [message, setMessage] = useState<{ tone: "quiet" | "signal"; text: string } | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -34,7 +37,7 @@ export function Progress() {
 
   const exportJson = () => {
     const base = buildExport(sessions.filter((s) => s.source !== "demo"), scripts.filter((s) => !s.id.startsWith("demo-")), new Date());
-    const file = { ...base, learning: exportableLearning(learn) };
+    const file = { ...base, learning: exportableLearning(learn), modes: exportableModes(extra) };
     const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");
     link.href = url;
@@ -48,11 +51,13 @@ export function Progress() {
     try {
       const text = await file.text();
       const added = actions.importHistory(parseImport(text));
-      const extra = parseLearningImport(text);
-      if (extra) learning.importData(extra);
+      const extraLearning = parseLearningImport(text);
+      if (extraLearning) learning.importData(extraLearning);
+      const extraModes = parseModesImport(text);
+      if (extraModes) modes.importData(extraModes);
       setMessage({
         tone: "quiet",
-        text: `Imported ${added.sessions} new takes and ${added.scripts} new scripts${extra ? ", plus drill and ear-training history" : ""}. What you already had was kept as it is.`,
+        text: `Imported ${added.sessions} new takes and ${added.scripts} new scripts${extraLearning || extraModes ? ", plus drills, scans, saved words and the rest of your practice history" : ""}. What you already had was kept as it is.`,
       });
     } catch (e) {
       setMessage({ tone: "signal", text: toAppError(e, "Could not read that file.").message });
@@ -77,6 +82,12 @@ export function Progress() {
         }
         aside={
           <>
+            <LinkButton href="/scan" size="sm">
+              Baseline scan
+            </LinkButton>
+            <LinkButton href="/words" size="sm">
+              My words
+            </LinkButton>
             <Button size="sm" onClick={exportJson} disabled={!hasReal}>
               Export JSON
             </Button>
@@ -115,6 +126,7 @@ export function Progress() {
               onClick={() => {
                 actions.removeDemo();
                 learning.removeDemo();
+                modes.removeDemo();
               }}
               className="font-medium text-fg underline decoration-signal underline-offset-4 hover:text-signal"
             >
@@ -208,6 +220,7 @@ export function Progress() {
                     onClick={() => {
                       actions.clearHistory();
                       learning.clear();
+                      modes.clear();
                       setConfirmClear(false);
                     }}
                   >

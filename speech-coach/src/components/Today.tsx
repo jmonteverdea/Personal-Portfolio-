@@ -6,6 +6,9 @@ import { useMemo } from "react";
 import { useAtlas } from "@/hooks/useAtlas";
 import { useHotkeys } from "@/hooks/useHotkeys";
 import { DEMO_RESULT_ID } from "@/lib/fixtures/demo";
+import { demoEarlierScan } from "@/lib/fixtures/demo-modes";
+import { CLARITY_NAMES, daysUntilRetake, summarizeScan } from "@/lib/modes/scan";
+import { modes } from "@/lib/modes/store";
 import { modeDescription } from "@/lib/mode";
 import { estimateMinutes, planSession, stepLabel } from "@/lib/learning/plan";
 import { weekRhythm } from "@/lib/learning/rhythm";
@@ -125,7 +128,10 @@ export function Today() {
   };
   const loadSample = () => {
     actions.loadDemo();
+    modes.seedScans([demoEarlierScan()]);
   };
+  const latestScan = atlas.scans[atlas.scans.length - 1];
+  const canScan = config.azure || atlas.demoMode;
 
   useHotkeys({ enter: atlas.hydrated && steps.length > 0 && !complete ? begin : undefined });
 
@@ -248,6 +254,27 @@ export function Today() {
             <p className="mt-4 text-sm text-fg-3">The session takes the two that recur most. The rest wait their turn.</p>
           </section>
         )}
+        {(latestScan || canScan) && (
+          <section aria-label="Baseline scan">
+            <Label as="h2">Baseline scan</Label>
+            {latestScan ? (
+              <p className="mt-3 text-sm leading-relaxed text-fg-2">
+                <Link href="/scan" className="text-fg underline decoration-rule-strong underline-offset-4 hover:decoration-signal">
+                  {CLARITY_NAMES[summarizeScan(latestScan.stats).level]}
+                </Link>
+                {daysUntilRetake(latestScan, atlas.now) <= 0 ? ". A month has passed: time for a retake." : `. Retake suggested in ${daysUntilRetake(latestScan, atlas.now)} days.`}
+              </p>
+            ) : (
+              <p className="mt-3 text-sm leading-relaxed text-fg-2">
+                Not taken yet.{" "}
+                <Link href="/scan" className="text-fg underline decoration-signal underline-offset-4 hover:text-signal">
+                  Five minutes to rank the sounds that matter most
+                </Link>
+                .
+              </p>
+            )}
+          </section>
+        )}
         <section>
           <Label as="h2">Mode</Label>
           <p className="mt-3 text-sm leading-relaxed text-fg-2">{modeDescription(config)}</p>
@@ -263,6 +290,7 @@ export function Today() {
                 onClick={() => {
                   actions.removeDemo();
                   learning.removeDemo();
+                  modes.removeDemo();
                 }}
                 className="underline decoration-rule-strong underline-offset-4 hover:text-fg"
               >

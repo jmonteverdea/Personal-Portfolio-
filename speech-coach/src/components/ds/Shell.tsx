@@ -10,12 +10,13 @@ import { Note } from "./ui";
 
 const NAV = [
   { href: "/", label: "Today", match: (p: string) => p === "/" || p.startsWith("/session") || p.startsWith("/ear") },
+  { href: "/speak", label: "Speak", match: (p: string) => p.startsWith("/speak") || p.startsWith("/talk") || p.startsWith("/shadow") },
   { href: "/scripts", label: "Scripts", match: (p: string) => p.startsWith("/scripts") || p.startsWith("/practice") || p.startsWith("/results") },
-  { href: "/progress", label: "Progress", match: (p: string) => p.startsWith("/progress") || p.startsWith("/sound") },
+  { href: "/progress", label: "Progress", match: (p: string) => p.startsWith("/progress") || p.startsWith("/sound") || p.startsWith("/scan") || p.startsWith("/words") },
 ];
 
 /** Speaking surfaces are dark so the script is the only bright thing in the room. */
-const STAGE_ROUTES = ["/practice", "/session", "/ear"];
+const STAGE_ROUTES = ["/practice", "/session", "/ear", "/talk/conversation", "/talk/free", "/shadow", "/scan/run", "/words/review"];
 
 export function ModeBadge() {
   const config = useConfig();
@@ -46,7 +47,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Link href="/" className="display text-[1.375rem] leading-none" aria-label="Speech Coach, home">
             <span className="display-italic">Speech</span> Coach
           </Link>
-          <nav className="order-3 flex w-full gap-7 sm:order-none sm:w-auto" aria-label="Main">
+          <nav className="order-3 flex w-full gap-6 sm:order-none sm:w-auto sm:gap-7" aria-label="Main">
             {NAV.map((item) => {
               const active = item.match(pathname);
               return (
