@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import type { ScriptToken } from "@/lib/text";
 
 /**
- * Large-type script view. `cursor` is the index of the next word to say:
- * everything before it is dimmed, the word at it is highlighted and kept in view.
+ * The typographic hero. Large display type, readable from a metre away.
+ * `cursor` is the next word to say: what is said dims, the current word is
+ * marked with a rule under it, never with motion that competes with reading.
  */
 export function Teleprompter({ tokens, cursor, active }: { tokens: ScriptToken[]; cursor: number; active: boolean }) {
   const currentRef = useRef<HTMLSpanElement>(null);
@@ -17,22 +18,18 @@ export function Teleprompter({ tokens, cursor, active }: { tokens: ScriptToken[]
   }, [cursor, active]);
 
   return (
-    <div
-      className="max-h-[46vh] overflow-y-auto rounded-2xl border border-line bg-white px-6 py-8 sm:px-10"
-      aria-label="Script"
-    >
-      <p className="text-2xl leading-[1.7] sm:text-3xl sm:leading-[1.7]">
+    <div data-lenis-prevent className="prompter max-h-[52vh] overflow-y-auto pb-[1.2em] pr-2 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,black_calc(100%-2.2em),transparent)]" aria-label="Script">
+      <p className="max-w-[26ch] text-balance sm:max-w-[30ch] lg:max-w-[34ch]">
         {tokens.map((token, i) => {
           const isCurrent = active && i === cursor;
           const done = active && i < cursor;
-          const startsSentence = i > 0 && tokens[i - 1]?.sentenceIndex !== token.sentenceIndex;
           return (
             <span key={i}>
-              {startsSentence && <span className="inline-block w-2" aria-hidden />}
               <span
                 ref={isCurrent ? currentRef : undefined}
-                className={`rounded-md px-1 py-0.5 transition-colors ${
-                  isCurrent ? "bg-accent text-white" : done ? "text-stone-400" : "text-ink"
+                data-current={isCurrent || undefined}
+                className={`transition-colors duration-200 ${
+                  isCurrent ? "text-fg underline decoration-signal decoration-[0.09em] underline-offset-[0.22em]" : done ? "text-fg-3/55" : "text-fg"
                 }`}
               >
                 {token.display}

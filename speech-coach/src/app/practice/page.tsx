@@ -1,6 +1,6 @@
 import { Suspense } from "react";
+import { Loading } from "@/components/ds/ui";
 import { Practice } from "@/components/Practice";
-import { Loading } from "@/components/ui";
 
 export default function PracticePage() {
   return (

@@ -1,5 +1,5 @@
-import { Library } from "@/components/Library";
+import { Today } from "@/components/Today";
 
 export default function HomePage() {
-  return <Library />;
+  return <Today />;
 }

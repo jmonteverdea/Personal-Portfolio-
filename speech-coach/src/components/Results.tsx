@@ -1,448 +1,458 @@
 "use client";
 
-import { ArrowLeft, FileQuestion, Mic, Play, Volume2 } from "lucide-react";
+import gsap from "gsap";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { toAppError } from "@/lib/errors";
-import { playSlice, stopPlayback } from "@/lib/speech/playback";
-import { speakReference } from "@/lib/speech/tts";
-import { getTakeAudio, useStore } from "@/lib/store";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useAtlas } from "@/hooks/useAtlas";
+import { useHotkeys } from "@/hooks/useHotkeys";
+import { useLenis } from "@/hooks/useLenis";
+import { guideFor } from "@/lib/coach/local";
+import { phonemeStatsFor } from "@/lib/history";
+import { scriptDelta, soundChanges } from "@/lib/learning/bests";
+import { useLearning } from "@/lib/learning/store";
+import { stopPlayback } from "@/lib/speech/playback";
+import { useStore } from "@/lib/store";
 import type { AssessmentResult, WordResult } from "@/lib/types";
-import { CoachingPanel } from "./CoachingPanel";
-import { useConfig } from "./ConfigContext";
-import { Button, Card, CardTitle, EmptyState, formatDate, Loading, Notice, Pill, scoreTone } from "./ui";
+import { band, BAND_TEXT, bare, Button, Delta, formatDate, Label, LinkButton, Loading, Note, ScoreBar, Sound, StateBlock, wordClass } from "./ds/ui";
+import { CoachingPanel } from "./results/Coaching";
+import { Pacing, TakeAudio } from "./results/Extras";
+import { RetryPanel, type RetryTarget } from "./results/RetryPanel";
+import { WordDetail } from "./results/WordDetail";
 
-const bare = (text: string): string => text.replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu, "");
+const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-/* ---------- scores ---------- */
-
-function ScoreRing({ score }: { score: number }) {
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const tone = scoreTone(score);
-  return (
-    <div className="relative h-36 w-36 shrink-0">
-      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden>
-        <circle cx="60" cy="60" r={radius} fill="none" strokeWidth="9" className="stroke-stone-100" />
-        <circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          strokeWidth="9"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - score / 100)}
-          className={tone.stroke}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-semibold tabular-nums">{Math.round(score)}</span>
-        <span className="text-xs text-muted">overall</span>
-      </div>
-    </div>
-  );
+interface Focus {
+  phoneme: string;
+  average: number;
+  heardAs: string | null;
+  words: WordResult[];
+  /** The word to retry first: the one where the sound scored lowest. */
+  worst: WordResult;
+  recurring: number;
 }
 
-function ScoreBar({ label, score, hint }: { label: string; score: number | null; hint: string }) {
-  return (
-    <div title={hint}>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="font-medium">{label}</span>
-        <span className="tabular-nums text-muted">{score === null ? "not measured" : Math.round(score)}</span>
-      </div>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-stone-100" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={score ?? undefined}>
-        {score !== null && <div className={`h-full rounded-full ${scoreTone(score).bar}`} style={{ width: `${score}%` }} />}
-      </div>
-      <p className="mt-1 text-xs text-muted">{hint}</p>
-    </div>
-  );
+/** The one thing to fix next: among this take's weak sounds, the one that recurs most across my history. */
+function useFocus(result: AssessmentResult): Focus | null {
+  const atlas = useAtlas();
+  return useMemo(() => {
+    const stats = phonemeStatsFor(result);
+    const rank = new Map(atlas.priorities.map((p, i) => [p.phoneme, i]));
+    const weak = Object.entries(stats)
+      .map(([phoneme, s]) => ({ phoneme, average: s.sum / s.count, count: s.count }))
+      .filter((s) => s.average < 80)
+      .sort((a, b) => (rank.get(a.phoneme) ?? 999) - (rank.get(b.phoneme) ?? 999) || a.average - b.average);
+    const top = weak[0];
+    if (!top) return null;
+    const holders = result.words
+      .filter((w) => w.status !== "insertion" && w.phonemes.some((p) => p.phoneme === top.phoneme))
+      .map((w) => ({ w, score: Math.min(...w.phonemes.filter((p) => p.phoneme === top.phoneme).map((p) => p.accuracy)) }))
+      .sort((a, b) => a.score - b.score);
+    const worst = holders[0]?.w;
+    if (!worst) return null;
+    const heard = worst.phonemes.find((p) => p.phoneme === top.phoneme)?.alternatives[0];
+    return {
+      phoneme: top.phoneme,
+      average: top.average,
+      heardAs: heard && heard.phoneme !== top.phoneme ? heard.phoneme : null,
+      words: holders.filter((h) => h.score < 80).map((h) => h.w).slice(0, 5),
+      worst,
+      recurring: atlas.priorities.find((p) => p.phoneme === top.phoneme)?.weakSessions ?? 0,
+    };
+  }, [atlas.priorities, result]);
 }
 
-function ScoresCard({ result }: { result: AssessmentResult }) {
-  const { scores } = result;
-  if (!scores) {
-    return (
-      <Card>
-        <CardTitle>Scores</CardTitle>
-        <Notice tone="warn" title="Phoneme scoring unavailable">
-          This take was recorded in transcript-only mode, so nothing was measured and no scores are shown. The
-          word-by-word comparison below still shows what you skipped or added. Add an Azure Speech key for accuracy,
-          fluency, completeness and prosody scores.
-        </Notice>
-      </Card>
-    );
-  }
-  return (
-    <Card>
-      <CardTitle aside={<span className="text-xs text-muted">All scores 0 to 100</span>}>Scores</CardTitle>
-      <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-8">
-        <ScoreRing score={scores.overall} />
-        <div className="grid w-full flex-1 gap-x-8 gap-y-4 sm:grid-cols-2">
-          <ScoreBar label="Accuracy" score={scores.accuracy} hint="How close your sounds are to a native speaker's." />
-          <ScoreBar label="Fluency" score={scores.fluency} hint="Natural use of pauses between words." />
-          <ScoreBar label="Completeness" score={scores.completeness} hint="Share of the script you actually said." />
-          <ScoreBar label="Prosody" score={scores.prosody} hint="Stress, intonation, speed and rhythm." />
-        </div>
-      </div>
-    </Card>
-  );
-}
+type Tab = "coaching" | "pacing" | "take";
+const TABS: { id: Tab; label: string }[] = [
+  { id: "coaching", label: "Coaching" },
+  { id: "pacing", label: "Pacing" },
+  { id: "take", label: "Your take" },
+];
 
-/* ---------- pacing ---------- */
-
-function PacingCard({ result }: { result: AssessmentResult }) {
-  const { pacing, words } = result;
-  const wpm = pacing.wordsPerMinute;
-  const verdict = wpm === null ? null : wpm < 120 ? "On the slow side" : wpm <= 170 ? "Comfortable pace" : "Fast";
-  return (
-    <Card>
-      <CardTitle>Pacing</CardTitle>
-      <div className="grid gap-6 sm:grid-cols-[auto_1fr]">
-        <div>
-          <p className="text-4xl font-semibold tabular-nums">{wpm ?? "n/a"}</p>
-          <p className="text-sm text-muted">words per minute{pacing.estimated ? " (estimate)" : ""}</p>
-          {verdict && <p className="mt-2 text-sm font-medium">{verdict}</p>}
-          <p className="mt-1 max-w-52 text-xs leading-relaxed text-muted">
-            {pacing.estimated
-              ? "Estimated from total recording time, including silence at the start and end."
-              : "Rule of thumb for clear work speech: 130 to 160."}
-          </p>
-        </div>
-        <div>
-          <h3 className="text-sm font-medium">
-            Long pauses
-            {pacing.longPauses && <span className="font-normal text-muted"> ({(pacing.longPauseThresholdMs / 1000).toFixed(1)}s or more)</span>}
-          </h3>
-          {pacing.longPauses === null ? (
-            <p className="mt-2 text-sm text-muted">Pause detection needs Azure word timestamps. It is unavailable in transcript-only mode.</p>
-          ) : pacing.longPauses.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">None. You kept moving.</p>
-          ) : (
-            <ul className="mt-2 space-y-1.5">
-              {pacing.longPauses.map((p) => (
-                <li key={p.afterWordIndex} className="flex flex-wrap items-center gap-2 text-sm">
-                  <span>{bare(words[p.afterWordIndex]?.text ?? "")}</span>
-                  <span className="rounded-md bg-stone-100 px-1.5 py-0.5 font-mono text-xs tabular-nums">
-                    {(p.durationMs / 1000).toFixed(1)}s
-                  </span>
-                  <span>{bare(words[p.beforeWordIndex]?.text ?? "")}</span>
-                  <Pill tone={p.atSentenceBoundary ? "neutral" : "amber"}>{p.atSentenceBoundary ? "between sentences" : "mid-sentence"}</Pill>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-/* ---------- word map ---------- */
-
-function wordClass(word: WordResult): string {
-  if (word.status === "omission") return "border-dashed border-stone-300 bg-white text-stone-400 line-through";
-  if (word.status === "insertion") return "border-violet-200 bg-violet-50 text-violet-900 italic";
-  if (word.accuracy === null) return "border-transparent bg-stone-100 text-ink";
-  if (word.status === "mispronounced" || word.accuracy < 60) return "border-transparent bg-rose-100 text-rose-950";
-  if (word.accuracy < 80) return "border-transparent bg-amber-100 text-amber-950";
-  return "border-transparent bg-emerald-50 text-emerald-950";
-}
-
-function Legend({ scored }: { scored: boolean }) {
-  const items = scored
-    ? [
-        ["bg-emerald-50 border-transparent", "80 and up"],
-        ["bg-amber-100 border-transparent", "60 to 79"],
-        ["bg-rose-100 border-transparent", "under 60"],
-      ]
-    : [["bg-stone-100 border-transparent", "said (not scored)"]];
-  return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted">
-      {items.map(([cls, label]) => (
-        <span key={label} className="inline-flex items-center gap-1.5">
-          <span className={`h-3 w-3 rounded border ${cls}`} aria-hidden />
-          {label}
-        </span>
-      ))}
-      <span className="inline-flex items-center gap-1.5">
-        <span className="h-3 w-3 rounded border border-dashed border-stone-400 bg-white" aria-hidden />
-        <span className="line-through">skipped</span>
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <span className="h-3 w-3 rounded border border-violet-300 bg-violet-50" aria-hidden />
-        <span className="italic">+ added</span>
-      </span>
-    </div>
-  );
-}
-
-function statusText(word: WordResult): string {
-  switch (word.status) {
-    case "omission":
-      return "Skipped. This script word was not heard.";
-    case "insertion":
-      return "Added. This word is not in the script at this point.";
-    case "mispronounced":
-      return word.spoken ? `Heard as "${word.spoken}".` : "Mispronounced.";
-    default:
-      return word.accuracy === null ? "Said. Not scored in transcript-only mode." : "Said correctly.";
-  }
-}
-
-function WordDetail({ word, result }: { word: WordResult; result: AssessmentResult }) {
-  const { azure } = useConfig();
-  const [busy, setBusy] = useState<"reference" | "mine" | null>(null);
-  const [note, setNote] = useState<string | null>(null);
-  const audio = getTakeAudio(result.id);
-  const canReplay = audio !== null && word.offsetMs !== null && word.durationMs !== null;
-  const spoken = bare(word.text);
-
-  const hearReference = async () => {
-    setBusy("reference");
-    setNote(null);
-    try {
-      const voice = await speakReference(spoken, azure);
-      setNote(voice === "azure" ? "Played with an Azure neural voice." : "Played with your browser's built-in voice.");
-    } catch (e) {
-      setNote(toAppError(e).message);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const replayMine = async () => {
-    if (!audio || word.offsetMs === null || word.durationMs === null) return;
-    setBusy("mine");
-    setNote(null);
-    try {
-      await playSlice(audio, word.offsetMs, word.durationMs);
-    } catch (e) {
-      setNote(toAppError(e).message);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const replayUnavailable =
-    word.status === "omission"
-      ? "You did not say this word, so there is nothing to replay."
-      : result.source === "demo"
-        ? "The sample result has no audio."
-        : word.offsetMs === null
-          ? "Word replay needs Azure word timestamps."
-          : "The recording is kept only until you reload the page.";
-
-  return (
-    <div className="rounded-xl border border-line bg-paper p-4" aria-live="polite">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xl font-semibold">{spoken}</p>
-          <p className="mt-0.5 text-sm text-muted">
-            {statusText(word)}
-            {word.accuracy !== null && word.status !== "insertion" && (
-              <>
-                {" "}Word accuracy <span className={`font-semibold ${scoreTone(word.accuracy).text}`}>{Math.round(word.accuracy)}</span>.
-              </>
-            )}
-          </p>
-          {word.prosody && (word.prosody.unexpectedBreak || word.prosody.missingBreak) && (
-            <p className="mt-1 text-sm text-amber-800">
-              {word.prosody.unexpectedBreak ? "Unexpected pause before this word." : "A pause was expected before this word."}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" loading={busy === "reference"} disabled={busy !== null} onClick={() => void hearReference()}>
-            {busy !== "reference" && <Volume2 className="h-4 w-4" aria-hidden />}
-            Hear reference
-          </Button>
-          <Button size="sm" loading={busy === "mine"} disabled={!canReplay || busy !== null} title={canReplay ? undefined : replayUnavailable} onClick={() => void replayMine()}>
-            {busy !== "mine" && <Play className="h-4 w-4" aria-hidden />}
-            Replay my word
-          </Button>
-        </div>
-      </div>
-      {!canReplay && <p className="mt-2 text-xs text-muted">{replayUnavailable}</p>}
-      {note && <p className="mt-2 text-xs text-muted">{note}</p>}
-
-      {word.phonemes.length > 0 ? (
-        <table className="mt-4 w-full text-sm">
-          <caption className="sr-only">Phoneme scores for {spoken}</caption>
-          <thead>
-            <tr className="text-left text-xs text-muted">
-              <th className="w-16 pb-1.5 font-medium">Sound</th>
-              <th className="pb-1.5 font-medium">Score</th>
-              <th className="w-28 pb-1.5 pl-3 font-medium">Heard as</th>
-            </tr>
-          </thead>
-          <tbody>
-            {word.phonemes.map((p, i) => {
-              const tone = scoreTone(p.accuracy);
-              const top = p.alternatives[0];
-              const heard = top && top.phoneme !== p.phoneme ? top.phoneme : null;
-              return (
-                <tr key={i}>
-                  <td className="ipa py-1 text-lg">/{p.phoneme}/</td>
-                  <td className="py-1">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-stone-200">
-                        <div className={`h-full rounded-full ${tone.bar}`} style={{ width: `${p.accuracy}%` }} />
-                      </div>
-                      <span className={`w-8 text-right font-medium tabular-nums ${tone.text}`}>{Math.round(p.accuracy)}</span>
-                    </div>
-                  </td>
-                  <td className="ipa py-1 pl-3">{heard ? <span className="text-rose-800">/{heard}/</span> : <span className="text-muted">as expected</span>}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      ) : (
-        word.status !== "omission" && (
-          <p className="mt-3 text-sm text-muted">No phoneme data. Phoneme scoring needs Azure Speech.</p>
-        )
-      )}
-    </div>
-  );
-}
-
-function WordMap({ result }: { result: AssessmentResult }) {
+function ResultView({ result, guided, replay }: { result: AssessmentResult; guided: boolean; replay: boolean }) {
+  const store = useStore();
+  const atlas = useAtlas();
+  const { retries } = useLearning();
+  const focus = useFocus(result);
+  const root = useRef<HTMLDivElement>(null);
+  const timeline = useRef<gsap.core.Timeline | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
-  const word = selected === null ? null : result.words[selected] ?? null;
+  const [retry, setRetry] = useState<RetryTarget | null>(null);
+  const [tab, setTab] = useState<Tab | null>(null);
+  useLenis();
+
+  const delta = useMemo(() => scriptDelta(store.sessions, result.id), [store.sessions, result.id]);
+  const changes = useMemo(() => soundChanges(atlas.sessions, result.id), [atlas.sessions, result.id]);
+  const scores = result.scores;
+  const word = selected === null ? null : result.words.find((w) => w.index === selected) ?? null;
   const counts = {
-    omitted: result.words.filter((w) => w.status === "omission").length,
-    inserted: result.words.filter((w) => w.status === "insertion").length,
-    mispronounced: result.words.filter((w) => w.status === "mispronounced").length,
+    skipped: result.words.filter((w) => w.status === "omission").length,
+    added: result.words.filter((w) => w.status === "insertion").length,
   };
+  const sentenceAverage = (i: number): number | null => {
+    const scored = result.words.filter((w) => w.sentenceIndex === i && w.status !== "insertion");
+    if (scored.length === 0) return null;
+    const values = scored.map((w) => (w.status === "omission" ? 0 : w.accuracy));
+    return values.some((v) => v === null) ? (scored.some((w) => w.status === "omission") ? 0 : null) : (values as number[]).reduce((a, b) => a + b, 0) / values.length;
+  };
+  // Transcript-only: nothing is scored, so the next action is the sentence with the most skipped words.
+  const weakestSentence = useMemo(() => {
+    const bySentence = new Map<number, number>();
+    for (const w of result.words) if (w.status === "omission" && w.sentenceIndex !== null) bySentence.set(w.sentenceIndex, (bySentence.get(w.sentenceIndex) ?? 0) + 1);
+    return [...bySentence.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  }, [result.words]);
 
-  return (
-    <Card>
-      <CardTitle aside={<Legend scored={result.scores !== null} />}>Word by word</CardTitle>
-      <p className="mb-4 text-sm text-muted">
-        {counts.mispronounced} mispronounced, {counts.omitted} skipped, {counts.inserted} added. Click a word for its sounds.
-      </p>
-      <div className="flex flex-wrap gap-x-1.5 gap-y-2 text-lg leading-none">
-        {result.words.map((w) => (
-          <button
-            key={w.index}
-            type="button"
-            onClick={() => setSelected(w.index === selected ? null : w.index)}
-            aria-pressed={w.index === selected}
-            aria-label={`${bare(w.text)}: ${w.status}${w.accuracy !== null ? `, accuracy ${Math.round(w.accuracy)}` : ""}`}
-            className={`rounded-md border px-1.5 py-1.5 transition-shadow ${wordClass(w)} ${
-              w.index === selected ? "ring-2 ring-accent ring-offset-1" : "hover:ring-1 hover:ring-stone-400"
-            }`}
-          >
-            {w.status === "insertion" && <span aria-hidden>+ </span>}
-            {w.text}
-          </button>
-        ))}
-      </div>
-      <div className="mt-5">
-        {word ? (
-          <WordDetail key={word.index} word={word} result={result} />
-        ) : (
-          <p className="rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted">
-            Select a word to see its IPA sounds, hear the reference pronunciation and replay how you said it.
-          </p>
-        )}
-      </div>
-    </Card>
-  );
-}
+  /* ----- signature moment: the reveal ----- */
+  useIsoLayoutEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const key = `speech-coach.revealed.${result.id}`;
+    let seen = false;
+    try {
+      seen = window.sessionStorage.getItem(key) === "1";
+      window.sessionStorage.setItem(key, "1");
+    } catch {
+      // Private mode: just play it.
+    }
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Reading feedback is quiet time. The reveal plays once per take, never on a revisit.
+    if (reduce || (seen && !replay)) return;
 
-/* ---------- full take ---------- */
+    const ctx = gsap.context(() => {
+      const words = gsap.utils.toArray<HTMLElement>("[data-w]");
+      const counters = gsap.utils.toArray<HTMLElement>("[data-count]");
+      const bars = gsap.utils.toArray<HTMLElement>("[data-bar]");
+      const settle = gsap.utils.toArray<HTMLElement>("[data-settle]");
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      timeline.current = tl;
 
-function TakeAudio({ result }: { result: AssessmentResult }) {
-  const blob = getTakeAudio(result.id);
-  const url = useMemo(() => (blob ? URL.createObjectURL(blob) : null), [blob]);
-  useEffect(() => () => {
-    if (url) URL.revokeObjectURL(url);
-  }, [url]);
+      gsap.set(words, { opacity: 0.12 });
+      gsap.set(bars, { scaleX: 0 });
+      gsap.set(settle, { opacity: 0, y: 28 });
+      gsap.set("[data-rule]", { scaleX: 0 });
 
-  return (
-    <Card>
-      <CardTitle>Your take</CardTitle>
-      {url ? (
-        <audio controls src={url} className="w-full" />
-      ) : (
-        <p className="text-sm text-muted">
-          {result.source === "demo"
-            ? "The sample result has no audio. Record a take to replay it here."
-            : "Audio is kept in memory only until you reload or close the tab, so this take can no longer be replayed. The scores are saved."}
-        </p>
-      )}
-      {result.recognizedText && (
-        <details className="mt-4 text-sm">
-          <summary className="cursor-pointer font-medium text-muted hover:text-ink">What was heard</summary>
-          <p className="mt-2 leading-relaxed">{result.recognizedText}</p>
-        </details>
-      )}
-    </Card>
-  );
-}
+      counters.forEach((node, i) => {
+        const target = Number(node.dataset.count ?? 0);
+        const state = { value: 0 };
+        node.textContent = "0";
+        tl.to(state, { value: target, duration: i === 0 ? 1.5 : 0.9, ease: "power2.out", onUpdate: () => (node.textContent = String(Math.round(state.value))) }, i === 0 ? 0.1 : 0.5 + i * 0.09);
+      });
+      tl.to(bars, { scaleX: 1, duration: 0.9, stagger: 0.09 }, 0.6);
+      // The script paints in at reading speed, capped so a long script does not make me wait.
+      const paint = Math.min(2.6, words.length * 0.045);
+      tl.to(words, { opacity: 1, duration: 0.35, ease: "power1.out", stagger: { amount: paint } }, 1.2);
+      tl.to("[data-rule]", { scaleX: 1, duration: 0.8, ease: "power2.inOut" }, `>-0.1`);
+      tl.to(settle, { opacity: 1, y: 0, duration: 0.8, stagger: 0.12 }, "<0.25");
+    }, el);
 
-/* ---------- page ---------- */
-
-export function Results() {
-  const id = useSearchParams().get("session");
-  const { hydrated, results } = useStore();
-  const result = id ? results[id] : undefined;
+    return () => {
+      timeline.current = null;
+      ctx.revert();
+    };
+  }, [result.id, replay]);
 
   useEffect(() => () => stopPlayback(), []);
 
-  if (!hydrated) return <Loading label="Loading result" />;
+  const skipReveal = () => {
+    const tl = timeline.current;
+    if (tl && tl.progress() < 1) tl.progress(1);
+  };
+  const fixNow = () => {
+    if (focus) {
+      setSelected(focus.worst.index);
+      setRetry({ kind: "word", index: focus.worst.index });
+    } else if (weakestSentence !== null) {
+      setRetry({ kind: "sentence", index: weakestSentence });
+    }
+  };
+
+  // Shortcuts for the top level. A selected word or an open retry has its own.
+  useHotkeys({ r: word || retry ? undefined : focus || weakestSentence !== null ? fixNow : undefined, escape: skipReveal }, !retry);
+
+  const retriedWords = new Set(retries.filter((r) => r.resultId === result.id && r.kind === "word").map((r) => r.targetIndex));
+
+  return (
+    <div ref={root} onPointerDown={skipReveal}>
+      {/* ----- title ----- */}
+      <header className="mb-12 flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
+        <div>
+          <Link href="/scripts" className="label text-fg-3 hover:text-fg">
+            ← Scripts
+          </Link>
+          <h1 className="display mt-3 max-w-4xl text-(length:--text-display-s)">{result.scriptTitle}</h1>
+          <Label className="mt-3">
+            {formatDate(result.createdAt)} ·{" "}
+            {result.source === "demo" ? "Demo · sample data" : result.source === "transcript" ? "Transcript-only · no sound scores" : `Azure · ${result.segmentCount} ${result.segmentCount === 1 ? "segment" : "segments"}`}
+          </Label>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {guided && (
+            <LinkButton href="/session" variant="solid">
+              Finish session
+            </LinkButton>
+          )}
+          <LinkButton href={`/practice?script=${encodeURIComponent(result.scriptId)}`}>Record again</LinkButton>
+        </div>
+      </header>
+
+      {/* ----- scores and the script as heard ----- */}
+      <div className="grid gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
+        <section aria-label="Scores">
+          {scores ? (
+            <>
+              <Label>Overall</Label>
+              <p className={`numeral mt-1 text-[clamp(7rem,15vw,13rem)] ${BAND_TEXT[band(Math.round(scores.overall))]}`}>
+                <span data-count={Math.round(scores.overall)}>{Math.round(scores.overall)}</span>
+              </p>
+              <p className="mt-4 flex min-h-5 flex-wrap items-center gap-x-4 gap-y-1">
+                {delta?.delta != null && <Delta value={delta.delta} suffix=" since your last take" />}
+                {delta?.isBest && <span className="label !text-good">Personal best for this script</span>}
+                {delta && delta.previous === null && <span className="label text-fg-3">First take of this script</span>}
+              </p>
+              <div className="mt-9 space-y-6">
+                <ScoreBar label="Accuracy" score={scores.accuracy} hint="How close your sounds are to a native speaker's." />
+                <ScoreBar label="Fluency" score={scores.fluency} hint="Natural use of pauses between words." />
+                <ScoreBar label="Completeness" score={scores.completeness} hint="Share of the script you said." />
+                <ScoreBar label="Prosody" score={scores.prosody} hint="Stress, intonation, speed and rhythm." />
+              </div>
+              <p className="label mt-6 text-fg-3">All scores 0 to 100 · the tick marks 80</p>
+            </>
+          ) : (
+            <>
+              <Label>Scores</Label>
+              <p className="display mt-3 text-(length:--text-display-s)">Words only.</p>
+              <p className="mt-4 max-w-sm text-[0.9375rem] leading-relaxed text-fg-2">
+                This take was recorded without Azure Speech, so no sounds were measured and no scores are shown. The script on the right still shows what you skipped and what you added.
+              </p>
+            </>
+          )}
+        </section>
+
+        <section aria-label="The script as heard">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <Label>The script, as heard</Label>
+            <Label as="span">
+              {counts.skipped} skipped · {counts.added} added · select a word
+            </Label>
+          </div>
+          <div className="prompter mt-5 !text-[clamp(1.5rem,1.05rem+1.5vw,2.25rem)] !leading-[1.55]">
+            {result.sentences.map((_, si) => {
+              const average = sentenceAverage(si);
+              const weak = average !== null && average < 80;
+              // Words of this sentence, plus any added words spoken inside it.
+              const first = result.words.findIndex((w) => w.sentenceIndex === si);
+              const last = result.words.findLastIndex((w) => w.sentenceIndex === si);
+              const items = first === -1 ? [] : result.words.slice(first, last + 1);
+              return (
+                <span key={si} className="group/s">
+                  {items.map((w) => (
+                    <span key={w.index}>
+                      <button
+                        type="button"
+                        data-w
+                        onClick={() => {
+                          setRetry(null);
+                          setSelected(w.index === selected ? null : w.index);
+                        }}
+                        aria-pressed={w.index === selected}
+                        aria-label={`${bare(w.text)}: ${w.status}${w.accuracy !== null ? `, ${Math.round(w.accuracy)}` : ""}`}
+                        className={`rounded-[2px] ${wordClass(w)} ${w.index === selected ? "bg-fg !text-bg !decoration-bg" : "hover:bg-surface"}`}
+                      >
+                        {w.status === "insertion" && <span aria-hidden>+</span>}
+                        {w.text}
+                        {w.refIndex !== null && retriedWords.has(w.refIndex) && <sup className="ml-0.5 font-mono text-[0.5em] not-italic text-good" title="Retried">↻</sup>}
+                      </button>{" "}
+                    </span>
+                  ))}
+                  <button
+                    type="button"
+                    {...(weak ? { "data-w": true } : {})}
+                    onClick={() => {
+                      setSelected(null);
+                      setRetry({ kind: "sentence", index: si });
+                    }}
+                    className={`label press mr-3 inline-flex h-6 -translate-y-1 items-center gap-1 rounded-full px-2 align-middle !text-[0.625rem] !tracking-[0.08em] ${
+                      weak ? "bg-signal-soft !text-signal hover:bg-signal hover:!text-bg" : "text-fg-3 opacity-0 hover:bg-surface hover:!text-fg focus-visible:opacity-100 group-hover/s:opacity-100"
+                    }`}
+                    aria-label={`Retry sentence ${si + 1}${average !== null ? `, average ${Math.round(average)}` : ""}`}
+                  >
+                    ↻ {average !== null && weak ? Math.round(average) : "retry"}
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm" aria-label="Legend">
+            {scores ? (
+              <>
+                <li className="w-good">80 and up</li>
+                <li className="w-fair">60 to 79</li>
+                <li className="w-poor">under 60</li>
+              </>
+            ) : (
+              <li className="w-plain">said, not scored</li>
+            )}
+            <li className="w-omit">skipped</li>
+            <li className="w-insert">+added</li>
+          </ul>
+
+          <div className="mt-8 space-y-6">
+            {word && !retry && (
+              <WordDetail key={word.index} word={word} result={result} hotkeys={!retry} onClose={() => setSelected(null)} onRetry={() => setRetry({ kind: "word", index: word.index })} />
+            )}
+            {retry && <RetryPanel key={`${retry.kind}-${retry.index}`} result={result} target={retry} onClose={() => setRetry(null)} />}
+          </div>
+        </section>
+      </div>
+
+      {/* ----- what improved, then the one thing to fix next ----- */}
+      <div data-rule className="mt-16 h-px origin-left bg-fg" />
+      <section data-settle className="grid gap-x-16 gap-y-10 pt-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-label="What to do next">
+        <div>
+          <Label>What improved</Label>
+          {changes.improved.length > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {changes.improved.slice(0, 4).map((c) => (
+                <li key={c.phoneme} className="flex items-baseline gap-4">
+                  <Sound className="w-14 text-2xl">{c.phoneme}</Sound>
+                  <span className="font-mono text-sm tabular-nums text-fg-2">
+                    {c.before} → {c.after}
+                  </span>
+                  <Delta value={c.delta} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-fg-3">
+              {delta?.previous == null ? "This is the first take to compare against. The next one will show what moved." : "No sound moved by more than a few points since the last take."}
+            </p>
+          )}
+          {changes.slipped.length > 0 && (
+            <p className="mt-5 text-sm text-fg-3">
+              Slipped: {changes.slipped.slice(0, 3).map((c, i) => (
+                <span key={c.phoneme}>
+                  {i > 0 && ", "}
+                  <Sound>{c.phoneme}</Sound> {c.delta}
+                </span>
+              ))}
+              . That is normal while a new sound settles.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <Label className="!text-signal">The one thing to fix next</Label>
+          {focus ? (
+            <>
+              <h2 className="display mt-3 text-(length:--text-display-m)">
+                <Sound className="text-signal">{focus.phoneme}</Sound>
+                {focus.heardAs && (
+                  <span className="text-fg-2">
+                    , not <Sound>{focus.heardAs}</Sound>
+                  </span>
+                )}
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed">{guideFor(focus.phoneme)?.how ?? "Play the model for each word below and copy it slowly, one sound at a time."}</p>
+              <p className="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-fg-2">
+                It averaged {Math.round(focus.average)} here, in {focus.words.map((w) => `“${bare(w.text)}”`).join(", ")}.
+                {focus.recurring > 1 && ` It has been weak in ${focus.recurring} of your sessions, which is why it comes before lower one-off scores.`}
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Button variant="signal" size="lg" onClick={fixNow} hotkey="R">
+                  Fix “{bare(focus.worst.text)}” now
+                </Button>
+                <LinkButton href={`/session/review?p=${encodeURIComponent(focus.phoneme)}`} size="lg">
+                  Drill <Sound>{focus.phoneme}</Sound>
+                </LinkButton>
+              </div>
+            </>
+          ) : weakestSentence !== null ? (
+            <>
+              <h2 className="display mt-3 text-(length:--text-display-m)">Say the whole sentence.</h2>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed">You skipped words in “{result.sentences[weakestSentence]}”. Read it once more on its own, slowly, to the last word.</p>
+              <div className="mt-8">
+                <Button variant="signal" size="lg" onClick={fixNow} hotkey="R">
+                  Retry that sentence
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="display mt-3 text-(length:--text-display-m)">Nothing stands out.</h2>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-fg-2">
+                {scores ? "No sound averaged under 80 in this take. Try a longer or harder script." : "Every word of the script was said, in order. Add Azure Speech for sound-level feedback."}
+              </p>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* ----- full detail, one click deeper ----- */}
+      <section data-settle className="mt-20" aria-label="More detail">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-y border-rule py-4" role="tablist" aria-label="More detail">
+          <Label as="span">More detail</Label>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              aria-controls={`panel-${t.id}`}
+              onClick={() => setTab(tab === t.id ? null : t.id)}
+              className={`press text-lg ${tab === t.id ? "text-fg underline decoration-signal decoration-2 underline-offset-8" : "text-fg-2 hover:text-fg"}`}
+            >
+              {t.label}
+              <span className="ml-2 font-mono text-sm text-fg-3" aria-hidden>
+                {tab === t.id ? "−" : "+"}
+              </span>
+            </button>
+          ))}
+        </div>
+        {tab && (
+          <div id={`panel-${tab}`} role="tabpanel" className="pt-10">
+            {tab === "coaching" && <CoachingPanel key={result.id} result={result} />}
+            {tab === "pacing" && <Pacing result={result} />}
+            {tab === "take" && <TakeAudio result={result} />}
+          </div>
+        )}
+      </section>
+
+      {!scores && (
+        <div className="mt-12 max-w-xl">
+          <Note>Add an Azure Speech key for accuracy, fluency, completeness and prosody scores, per-sound detail and word replay.</Note>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function Results() {
+  const params = useSearchParams();
+  const id = params.get("session");
+  const { hydrated, results } = useStore();
+  const result = id ? results[id] : undefined;
+
+  if (!hydrated) return <Loading label="Loading the take" />;
   if (!result) {
     return (
-      <EmptyState
-        icon={<FileQuestion className="h-8 w-8" aria-hidden />}
-        title="This result is not stored"
+      <StateBlock
+        kind="empty"
+        title="This take is no longer stored in full."
         action={
           <>
-            <Link href="/history" className="rounded-lg border border-line bg-white px-4 py-2 text-sm font-medium">See progress</Link>
-            <Link href="/" className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white">Back to scripts</Link>
+            <LinkButton href="/progress" variant="solid">
+              See progress
+            </LinkButton>
+            <LinkButton href="/scripts" variant="quiet">
+              Back to scripts
+            </LinkButton>
           </>
         }
       >
-        Only the most recent full results are kept in the browser. Its scores are still in your progress history.
-      </EmptyState>
+        Only the most recent takes keep their word-by-word detail. Its scores are still in your history.
+      </StateBlock>
     );
   }
-
-  return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Scripts
-          </Link>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{result.scriptTitle}</h1>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted">
-            <span>{formatDate(result.createdAt)}</span>
-            {result.source === "demo" && <Pill tone="amber">Demo: sample data</Pill>}
-            {result.source === "transcript" && <Pill tone="amber">Transcript-only: no phoneme scores</Pill>}
-            {result.source === "azure" && <Pill tone="accent">Azure, {result.segmentCount} {result.segmentCount === 1 ? "segment" : "segments"}</Pill>}
-          </div>
-        </div>
-        <Link
-          href={`/practice?script=${encodeURIComponent(result.scriptId)}`}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-[#0c5a4d]"
-        >
-          <Mic className="h-4 w-4" aria-hidden />
-          Practice again
-        </Link>
-      </div>
-
-      <ScoresCard result={result} />
-      <div className="grid gap-5 lg:grid-cols-2">
-        <PacingCard result={result} />
-        <TakeAudio result={result} />
-      </div>
-      <WordMap key={result.id} result={result} />
-      <CoachingPanel key={`coach-${result.id}`} result={result} />
-    </div>
-  );
+  return <ResultView key={result.id} result={result} guided={params.get("guided") === "1"} replay={params.get("reveal") === "1"} />;
 }

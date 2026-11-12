@@ -45,6 +45,8 @@ export interface RetryRecord {
   after: number | null;
   /** Per-word outcome of the retry, for the side-by-side view. */
   words: { text: string; before: number | null; after: number | null; status: string }[];
+  /** Where the retry sits inside its own recording, for replay. */
+  clip?: { offsetMs: number; durationMs: number };
   source: ResultSource;
 }
 

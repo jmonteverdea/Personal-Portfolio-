@@ -47,12 +47,13 @@ export function buildDemoSessions(): SessionRecord[] {
   const earlier = [
     { id: "demo-session-1", date: "2026-11-03T15:30:00.000Z", drop: 11, wpm: 171, pauses: 5 },
     { id: "demo-session-2", date: "2026-11-05T15:30:00.000Z", drop: 7, wpm: 164, pauses: 4 },
-    { id: "demo-session-3", date: "2026-11-07T15:30:00.000Z", drop: 3, wpm: 158, pauses: 4 },
-  ].map(({ id, date, drop, wpm, pauses }): SessionRecord => {
+    { id: "demo-session-3", date: "2026-11-07T15:30:00.000Z", drop: 3, wpm: 158, pauses: 4, extra: { v: 11, "ɪ": 6 } as Record<string, number> },
+  ].map(({ id, date, drop, wpm, pauses, extra }): SessionRecord => {
     const lower = (n: number): number => Math.max(0, Math.round((n - drop) * 10) / 10);
     const phonemeStats: Record<string, PhonemeStat> = {};
     for (const [phoneme, stat] of Object.entries(latest.phonemeStats)) {
-      phonemeStats[phoneme] = { ...stat, sum: Math.max(0, stat.sum - drop * stat.count) };
+      // Two sounds were noticeably worse in the take before last, so the latest take shows real movement.
+      phonemeStats[phoneme] = { ...stat, sum: Math.max(0, stat.sum - (drop + (extra?.[phoneme] ?? 0)) * stat.count) };
     }
     return {
       ...latest,

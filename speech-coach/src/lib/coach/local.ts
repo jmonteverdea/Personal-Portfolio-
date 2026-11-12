@@ -6,7 +6,7 @@ import type { Coaching, CoachSummary } from "./schema";
  * Spanish speaker. Pure and deterministic. It cannot suggest rewordings.
  */
 
-interface SoundGuide {
+export interface SoundGuide {
   /** What the tongue, lips, jaw and air do. */
   how: string;
   /** Default minimal pair: [target word, contrast word]. */
@@ -150,7 +150,7 @@ const STOPWORDS = new Set(
 
 const MAX_SOUND_FIXES = 5;
 
-function guideFor(sound: string): SoundGuide | null {
+export function guideFor(sound: string): SoundGuide | null {
   const key = sound.replace(/[/ːˈˌ\s]/g, "");
   return GUIDE[key] ?? GUIDE[ALIASES[key] ?? ""] ?? null;
 }
