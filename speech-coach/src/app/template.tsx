@@ -1,15 +1,10 @@
-"use client";
-
-import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
-/** One quiet page transition: the new page rises into place. Nothing loops, nothing lingers. */
+/**
+ * One quiet page transition: the new page rises into place. Done in CSS so the
+ * server and the browser render the same markup, and so prefers-reduced-motion
+ * switches it off with everything else.
+ */
 export default function Template({ children }: { children: ReactNode }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <>{children}</>;
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
-      {children}
-    </motion.div>
-  );
+  return <div className="page-in">{children}</div>;
 }

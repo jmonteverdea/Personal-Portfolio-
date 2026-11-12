@@ -130,7 +130,18 @@ export function Progress() {
         </StateBlock>
       ) : (
         <div className="space-y-12">
-          <Plate caption="Sound map" aside={<Label as="span">{atlas.due.length} due for review</Label>}>
+          <Plate
+            caption="Sound map"
+            aside={
+              atlas.due.length > 0 ? (
+                <Link href="/" className="label press !text-signal underline decoration-signal underline-offset-4 hover:!text-fg">
+                  {atlas.due.length} due for review · open today&rsquo;s session →
+                </Link>
+              ) : (
+                <Label as="span">Nothing due today</Label>
+              )
+            }
+          >
             {atlas.sounds.size === 0 ? (
               <p className="py-10 text-center text-sm text-fg-3">No sound data yet. The map is drawn from Azure sound scores, so it needs at least one scored take.</p>
             ) : (
@@ -177,7 +188,11 @@ export function Progress() {
                 </div>
               }
             >
-              <TrendChart sessions={atlas.sessions} metric={metric} />
+              <div className="overflow-x-auto" data-lenis-prevent>
+                <div className="min-w-[520px]">
+                  <TrendChart sessions={atlas.sessions} metric={metric} />
+                </div>
+              </div>
             </Plate>
           </div>
 

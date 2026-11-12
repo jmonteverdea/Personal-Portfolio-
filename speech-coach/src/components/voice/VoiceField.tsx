@@ -20,7 +20,7 @@ const rgb = (hex: string): [number, number, number] => [1, 3, 5].map((i) => pars
 
 /** Frame time over which the shader is considered too slow for this machine. */
 const SLOW_FRAME_MS = 24;
-const SAMPLE_FRAMES = 70;
+const SAMPLE_FRAMES = 30;
 
 function pickMode(reduce: boolean): Mode {
   if (reduce) return "still";

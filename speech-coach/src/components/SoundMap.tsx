@@ -153,7 +153,8 @@ export function SoundMap({ sounds }: { sounds: ReadonlyMap<string, SoundEntry> }
           <figcaption className="mb-3">
             <Label as="span">Plate II · Vowels, by tongue position</Label>
           </figcaption>
-          <svg viewBox={`0 0 ${vW} ${vH}`} className="w-full" role="group" aria-label="Vowels">
+          <div className="overflow-x-auto" data-lenis-prevent>
+          <svg viewBox={`0 0 ${vW} ${vH}`} className="w-full min-w-[480px]" role="group" aria-label="Vowels">
             <polygon points={`${vx(0, 0) - 40},${vy(0) - 40} ${vx(1, 0) + 40},${vy(0) - 40} ${vx(1, 1) + 40},${vy(1) + 40} ${vx(0, 1) - 40},${vy(1) + 40}`} fill="none" stroke="var(--rule)" strokeWidth="1" />
             {[0.33, 0.66].map((t) => (
               <line key={t} x1={vx(0, t) - 40} x2={vx(1, t) + 40} y1={vy(t)} y2={vy(t)} stroke="var(--rule)" strokeWidth="1" strokeDasharray="2 5" />
@@ -167,6 +168,7 @@ export function SoundMap({ sounds }: { sounds: ReadonlyMap<string, SoundEntry> }
               <Point key={v.phoneme} phoneme={v.phoneme} entry={merged.get(v.phoneme)} x={vx(v.x, v.y)} y={vy(v.y)} />
             ))}
           </svg>
+          </div>
         </figure>
 
         <div>

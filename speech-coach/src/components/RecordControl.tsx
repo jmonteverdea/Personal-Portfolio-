@@ -44,7 +44,7 @@ export function RecordControl({
 export function RecordingStatus({ phase, elapsed }: { phase: RecorderPhase; elapsed: string }) {
   const recording = phase === "recording";
   return (
-    <div className="flex items-center gap-3" aria-live="polite">
+    <div className="ml-auto flex items-center gap-3" aria-live="polite">
       <span className={`h-2.5 w-2.5 rounded-full ${recording ? "rec-dot bg-signal" : "bg-rule-strong"}`} aria-hidden />
       <span className={`label ${recording ? "!text-signal" : "text-fg-3"}`}>{recording ? "Recording" : phase === "processing" ? "Scoring" : phase === "starting" ? "Starting" : "Standing by"}</span>
       <span className="font-mono text-lg tabular-nums text-fg" aria-label="Elapsed time">{elapsed}</span>

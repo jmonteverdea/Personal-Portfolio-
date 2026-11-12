@@ -62,6 +62,20 @@ function useFocus(result: AssessmentResult): Focus | null {
   }, [atlas.priorities, result]);
 }
 
+function SubScores({ scores }: { scores: NonNullable<AssessmentResult["scores"]> }) {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+        <ScoreBar label="Accuracy" score={scores.accuracy} title="How close your sounds are to a native speaker's." />
+        <ScoreBar label="Fluency" score={scores.fluency} title="Natural use of pauses between words." />
+        <ScoreBar label="Completeness" score={scores.completeness} title="Share of the script you said." />
+        <ScoreBar label="Prosody" score={scores.prosody} title="Stress, intonation, speed and rhythm." />
+      </div>
+      <p className="label mt-5 text-fg-3">0 to 100 · the tick marks 80</p>
+    </>
+  );
+}
+
 type Tab = "coaching" | "pacing" | "take";
 const TABS: { id: Tab; label: string }[] = [
   { id: "coaching", label: "Coaching" },
@@ -174,7 +188,7 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
   return (
     <div ref={root} onPointerDown={skipReveal}>
       {/* ----- title ----- */}
-      <header className="mb-12 flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
+      <header className="mb-9 flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
         <div>
           <Link href="/scripts" className="label text-fg-3 hover:text-fg">
             ← Scripts
@@ -201,7 +215,7 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
           {scores ? (
             <>
               <Label>Overall</Label>
-              <p className={`numeral mt-1 text-[clamp(7rem,15vw,13rem)] ${BAND_TEXT[band(Math.round(scores.overall))]}`}>
+              <p className={`numeral mt-1 text-[clamp(7rem,13vw,11rem)] ${BAND_TEXT[band(Math.round(scores.overall))]}`}>
                 <span data-count={Math.round(scores.overall)}>{Math.round(scores.overall)}</span>
               </p>
               <p className="mt-4 flex min-h-5 flex-wrap items-center gap-x-4 gap-y-1">
@@ -209,13 +223,10 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
                 {delta?.isBest && <span className="label !text-good">Personal best for this script</span>}
                 {delta && delta.previous === null && <span className="label text-fg-3">First take of this script</span>}
               </p>
-              <div className="mt-9 space-y-6">
-                <ScoreBar label="Accuracy" score={scores.accuracy} hint="How close your sounds are to a native speaker's." />
-                <ScoreBar label="Fluency" score={scores.fluency} hint="Natural use of pauses between words." />
-                <ScoreBar label="Completeness" score={scores.completeness} hint="Share of the script you said." />
-                <ScoreBar label="Prosody" score={scores.prosody} hint="Stress, intonation, speed and rhythm." />
+              {/* On a phone the four sub-scores move below the next action: the thing to do comes before the detail. */}
+              <div className="mt-8 hidden lg:block">
+                <SubScores scores={scores} />
               </div>
-              <p className="label mt-6 text-fg-3">All scores 0 to 100 · the tick marks 80</p>
             </>
           ) : (
             <>
@@ -244,7 +255,7 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
               const last = result.words.findLastIndex((w) => w.sentenceIndex === si);
               const items = first === -1 ? [] : result.words.slice(first, last + 1);
               return (
-                <span key={si} className="group/s">
+                <span key={si}>
                   {items.map((w) => (
                     <span key={w.index}>
                       <button
@@ -264,20 +275,20 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
                       </button>{" "}
                     </span>
                   ))}
-                  <button
-                    type="button"
-                    {...(weak ? { "data-w": true } : {})}
-                    onClick={() => {
-                      setSelected(null);
-                      setRetry({ kind: "sentence", index: si });
-                    }}
-                    className={`label press mr-3 inline-flex h-6 -translate-y-1 items-center gap-1 rounded-full px-2 align-middle !text-[0.625rem] !tracking-[0.08em] ${
-                      weak ? "bg-signal-soft !text-signal hover:bg-signal hover:!text-bg" : "text-fg-3 opacity-0 hover:bg-surface hover:!text-fg focus-visible:opacity-100 group-hover/s:opacity-100"
-                    }`}
-                    aria-label={`Retry sentence ${si + 1}${average !== null ? `, average ${Math.round(average)}` : ""}`}
-                  >
-                    ↻ {average !== null && weak ? Math.round(average) : "retry"}
-                  </button>
+                  {weak && (
+                    <button
+                      type="button"
+                      data-w
+                      onClick={() => {
+                        setSelected(null);
+                        setRetry({ kind: "sentence", index: si });
+                      }}
+                      className="label press mr-3 inline-flex h-6 -translate-y-1 items-center gap-1 rounded-full bg-signal-soft px-2 align-middle !text-[0.625rem] !tracking-[0.08em] !text-signal hover:bg-signal hover:!text-bg"
+                      aria-label={`Retry sentence ${si + 1}, average ${Math.round(average ?? 0)}`}
+                    >
+                      ↻ {Math.round(average ?? 0)}
+                    </button>
+                  )}
                 </span>
               );
             })}
@@ -307,7 +318,7 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
       </div>
 
       {/* ----- what improved, then the one thing to fix next ----- */}
-      <div data-rule className="mt-16 h-px origin-left bg-fg" />
+      <div data-rule className="mt-12 h-px origin-left bg-fg" />
       <section data-settle className="grid gap-x-16 gap-y-10 pt-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" aria-label="What to do next">
         <div>
           <Label>What improved</Label>
@@ -387,6 +398,12 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
           )}
         </div>
       </section>
+
+      {scores && (
+        <section data-settle className="mt-14 lg:hidden" aria-label="Score breakdown">
+          <SubScores scores={scores} />
+        </section>
+      )}
 
       {/* ----- full detail, one click deeper ----- */}
       <section data-settle className="mt-20" aria-label="More detail">

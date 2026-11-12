@@ -73,7 +73,7 @@ void main() {
   float t = uTime;
 
   // Ground: drifts so slowly it reads as still.
-  float ground = fbm(p * 1.1 + vec2(t * 0.03, -t * 0.018));
+  float ground = fbm(p * 0.62 + vec2(t * 0.03, -t * 0.018));
 
   // The voice: a hill at the centre, wider than it is tall.
   vec2 q = p * vec2(0.4, 1.2);
@@ -87,7 +87,7 @@ void main() {
   float height = ground * 0.4 + hill + tremor + ripple;
 
   // Contour lines of that height, one pixel wide whatever the slope.
-  float f = height * 11.0;
+  float f = height * 8.0;
   float d = abs(fract(f - 0.5) - 0.5);
   float w = fwidth(f);
   float line = 1.0 - smoothstep(w * 0.55, w * 1.55, d);
@@ -96,14 +96,15 @@ void main() {
 
   float heat = smoothstep(0.1, 0.8, hill);
   vec3 ink = mix(uLine, uHot, heat);
-  float strength = line * mix(0.15, 0.4, index) * (1.0 + heat * 1.7);
+  float strength = line * mix(0.09, 0.26, index) * (1.0 + heat * 2.6);
 
   vec3 color = mix(uBg, ink, clamp(strength, 0.0, 1.0));
   color += uHot * heat * heat * (0.05 + uLevel * 0.1);
 
   // Fade into the page at the top and bottom edges.
-  float fade = smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
-  color = mix(uBg, color, 0.12 + 0.88 * fade);
+  // and at the sides, where the controls sit, so nothing moves behind text.
+  float fade = smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y) * smoothstep(0.1, 0.34, vUv.x) * smoothstep(0.9, 0.66, vUv.x);
+  color = mix(uBg, color, fade);
 
   fragColor = vec4(color, 1.0);
 }`;

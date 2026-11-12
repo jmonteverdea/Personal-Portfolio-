@@ -97,7 +97,7 @@ export function Plate({
   flush?: boolean;
 }) {
   return (
-    <section className={`ticks border border-rule ${className}`}>
+    <section className={`ticks min-w-0 border border-rule ${className}`}>
       {(caption || aside) && (
         <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-rule px-5 py-3 sm:px-7">
           {caption && <Label as="h2">{caption}</Label>}
@@ -276,10 +276,10 @@ export function wordClass(word: Pick<WordResult, "status" | "accuracy">): string
 }
 
 /** A thin instrument bar with a tick at the 80 line. */
-export function ScoreBar({ label, score, hint }: { label: string; score: number | null; hint?: string }) {
+export function ScoreBar({ label, score, hint, title }: { label: string; score: number | null; hint?: string; title?: string }) {
   const b = score === null ? null : band(Math.round(score));
   return (
-    <div data-count-row>
+    <div data-count-row title={title}>
       <div className="flex items-baseline justify-between gap-3">
         <Label as="span">{label}</Label>
         <span className={`font-mono text-sm tabular-nums ${b ? BAND_TEXT[b] : "text-fg-3"}`}>
