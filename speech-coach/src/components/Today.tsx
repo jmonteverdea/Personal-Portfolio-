@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { EventCard } from "./modes/Event";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { useAtlas } from "@/hooks/useAtlas";
@@ -138,6 +139,8 @@ export function Today() {
   if (!atlas.hydrated) return <Loading label="Reading your history" />;
 
   return (
+    <>
+    {atlas.event && <EventCard event={atlas.event} />}
     <div className="grid gap-x-16 gap-y-14 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]">
       <div>
         <Label className="rise">
@@ -275,6 +278,32 @@ export function Today() {
             )}
           </section>
         )}
+        <section aria-label="My words and events">
+          <Label as="h2">My words</Label>
+          <p className="mt-3 text-sm leading-relaxed text-fg-2">
+            <Link href="/words" className="text-fg underline decoration-rule-strong underline-offset-4 hover:decoration-signal">
+              {atlas.savedWords.length === 0 ? "Save the words your work runs on" : `${atlas.savedWords.length} saved`}
+            </Link>
+            {atlas.dueWords.length > 0 && (
+              <>
+                {", "}
+                <Link href="/words/review" className="text-signal underline decoration-signal underline-offset-4">
+                  {atlas.dueWords.length} due
+                </Link>
+              </>
+            )}
+            .
+          </p>
+          {!atlas.event && (
+            <p className="mt-3 text-sm leading-relaxed text-fg-2">
+              Presenting soon?{" "}
+              <Link href="/event" className="text-fg underline decoration-rule-strong underline-offset-4 hover:decoration-signal">
+                Set up an event
+              </Link>{" "}
+              for a day-by-day rehearsal plan.
+            </p>
+          )}
+        </section>
         <section>
           <Label as="h2">Mode</Label>
           <p className="mt-3 text-sm leading-relaxed text-fg-2">{modeDescription(config)}</p>
@@ -302,5 +331,6 @@ export function Today() {
         </section>
       </aside>
     </div>
+    </>
   );
 }

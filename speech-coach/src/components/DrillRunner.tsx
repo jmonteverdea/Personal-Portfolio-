@@ -9,6 +9,7 @@ import { useTakeRecorder, type TakeFinished } from "@/hooks/useTakeRecorder";
 import { buildAssessmentResult, buildTranscriptResult } from "@/lib/azure/normalize";
 import { guideFor } from "@/lib/coach/local";
 import { triesLeft, tryState } from "@/lib/modes/trust";
+import { savedWordsWithSound } from "@/lib/modes/words";
 import { simulateDrillTake } from "@/lib/fixtures/demo-learning";
 import { phonemeStatsFor } from "@/lib/history";
 import { stageMaterial, wordsWithSound } from "@/lib/learning/content";
@@ -64,8 +65,13 @@ export function DrillRunner({ phoneme, onDone, doneLabel = "Done" }: { phoneme: 
   const stage = DRILL_STAGES[stageIndex] as DrillStage;
   const examples = useMemo(() => atlas.priorities.find((p) => p.phoneme === phoneme)?.examples ?? [], [atlas.priorities, phoneme]);
   const results = useMemo(() => Object.values(store.results), [store.results]);
-  const material = useMemo(() => stageMaterial(phoneme, stage, { scripts: store.scripts, results, examples }), [phoneme, stage, store.scripts, results, examples]);
   const targets = useMemo(() => wordsWithSound(phoneme, results, examples), [phoneme, results, examples]);
+  const material = useMemo(() => {
+    const base = stageMaterial(phoneme, stage, { scripts: store.scripts, results, examples });
+    // My saved words that hold this sound join the mixed stage, so the drill uses my own vocabulary.
+    const mine = stage === "mixed" ? savedWordsWithSound(atlas.savedWords, targets).filter((w) => !base.modelParts.includes(w)) : [];
+    return mine.length ? { ...base, text: `${base.text.replace(/\.\s*$/, "")}, ${mine.join(", ")}.`, modelParts: [...base.modelParts, ...mine] } : base;
+  }, [phoneme, stage, store.scripts, results, examples, atlas.savedWords, targets]);
   const guide = guideFor(phoneme);
   const stageTakes = takes[stage] ?? [];
   const take = stageTakes[stageTakes.length - 1] ?? null;
