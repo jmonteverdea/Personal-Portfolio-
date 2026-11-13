@@ -3,7 +3,7 @@ import { DEMO_ANSWERS, DEMO_FREE_TALK, demoContours, demoEarlierScan, demoScanRe
 import { CONSONANTS, VOWELS } from "@/lib/learning/map";
 import { analyzeDelivery, RAMBLING_WORDS, tightenByRules } from "@/lib/modes/delivery";
 import { activeEvent, buildEventPlan, hardSentencesIn, MAX_PLAN_DAYS, PACE_TARGET, riskyWordsIn } from "@/lib/modes/event";
-import { chunkSentence, compareContours, extractPitch, medianHz, pitchPerWord, pitchRange, smoothContour, toSemitones, type Contour } from "@/lib/modes/pitch";
+import { alignTime, stressGaps, chunkSentence, compareContours, extractPitch, medianHz, pitchPerWord, pitchRange, smoothContour, toSemitones, type Contour } from "@/lib/modes/pitch";
 import { CLARITY_NAMES, CLEAR, compareScans, daysUntilRetake, mergeStats, SCAN_PARTS, SCAN_TARGETS, summarizeScan } from "@/lib/modes/scan";
 import { customScenario, pickCorrection, SCENARIOS, scriptedReply, turnFromOutcome } from "@/lib/modes/talk";
 import { exportableModes, mergeModes, parseModesImport } from "@/lib/modes/transfer";
@@ -544,5 +544,29 @@ describe("modes export and import", () => {
     expect(merged.scans.map((s) => s.id)).toEqual(["demo-scan-0", "mine", "new"]);
     expect(merged.words).toHaveLength(1);
     expect(merged.settings.spanishHints).toBe(true);
+  });
+});
+
+describe("drawing two voices over the same words", () => {
+  const from = [{ text: "we", startMs: 0, endMs: 100 }, { text: "ship", startMs: 200, endMs: 400 }];
+  const to = [{ text: "we", startMs: 0, endMs: 200 }, { text: "ship", startMs: 300, endMs: 900 }];
+  it("maps a moment in my take onto the model's clock, word by word", () => {
+    expect(alignTime(50, from, to)).toBe(100);
+    expect(alignTime(150, from, to)).toBe(250);
+    expect(alignTime(300, from, to)).toBe(600);
+    expect(alignTime(999, from, to)).toBe(900);
+  });
+  it("falls back to proportion when the words do not line up", () => {
+    expect(alignTime(200, from, [to[0]!])).toBe(100);
+    expect(alignTime(120, [], to)).toBe(120);
+  });
+  it("names the words where my pitch is furthest from the model", () => {
+    const { model, mine, modelWords, myWords } = demoContours("I think we need three more weeks to finish testing.");
+    const gaps = stressGaps(model, mine, modelWords, myWords);
+    expect(gaps[0]).toMatchObject({ word: "think" });
+    expect(gaps[0]!.gap).toBeGreaterThan(2);
+    expect(gaps.length).toBeLessThanOrEqual(2);
+    expect(stressGaps(model, model, modelWords, modelWords)).toEqual([]);
+    expect(stressGaps(model, mine, modelWords, [])).toEqual([]);
   });
 });

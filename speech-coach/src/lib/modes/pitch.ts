@@ -207,3 +207,49 @@ export function chunkSentence(sentence: string, maxWords = 7): string[] {
     return out;
   }, []);
 }
+
+/**
+ * Map a moment in one recording onto another recording's clock, word by word,
+ * so two voices saying the same words at different speeds can be drawn over
+ * the same set of words. Falls back to plain proportion when the words do not line up.
+ */
+export function alignTime(tMs: number, from: readonly TimedWord[], to: readonly TimedWord[]): number {
+  const fromEnd = from[from.length - 1]?.endMs ?? 0;
+  const toEnd = to[to.length - 1]?.endMs ?? 0;
+  if (from.length === 0 || from.length !== to.length || fromEnd <= 0) return fromEnd > 0 ? (tMs / fromEnd) * toEnd : tMs;
+  const scale = (t: number, a0: number, a1: number, b0: number, b1: number) => (a1 <= a0 ? b0 : b0 + ((t - a0) / (a1 - a0)) * (b1 - b0));
+  const first = from[0] as TimedWord;
+  if (tMs <= first.startMs) return scale(tMs, 0, first.startMs, 0, (to[0] as TimedWord).startMs);
+  for (let i = 0; i < from.length; i++) {
+    const f = from[i] as TimedWord;
+    const t = to[i] as TimedWord;
+    if (tMs <= f.endMs) return scale(tMs, f.startMs, f.endMs, t.startMs, t.endMs);
+    const nextF = from[i + 1];
+    const nextT = to[i + 1];
+    if (nextF && nextT && tMs < nextF.startMs) return scale(tMs, f.endMs, nextF.startMs, t.endMs, nextT.startMs);
+  }
+  return toEnd;
+}
+
+export interface StressGap {
+  word: string;
+  index: number;
+  /** Model pitch minus mine on this word, in semitones. Positive means I should go higher. */
+  gap: number;
+}
+
+/** The words where my pitch sits furthest from the model's, biggest gap first. Only gaps a listener would hear. */
+export function stressGaps(model: Contour, mine: Contour, modelWords: readonly TimedWord[], myWords: readonly TimedWord[], minGap = 2, max = 2): StressGap[] {
+  if (modelWords.length === 0 || modelWords.length !== myWords.length) return [];
+  const a = pitchPerWord(model, modelWords);
+  const b = pitchPerWord(mine, myWords);
+  return modelWords
+    .flatMap((w, index) => {
+      const m = a[index];
+      const y = b[index];
+      return m == null || y == null ? [] : [{ word: w.text, index, gap: Math.round((m - y) * 10) / 10 }];
+    })
+    .filter((g) => Math.abs(g.gap) >= minGap)
+    .sort((x, y) => Math.abs(y.gap) - Math.abs(x.gap))
+    .slice(0, max);
+}
