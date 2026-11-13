@@ -288,6 +288,7 @@ export function WordsReview() {
         </Link>
         <Label as="span">
           Word {index + 1} of {list.length}
+          {atlas.demoMode && " · demo, simulated scores"}
         </Label>
       </div>
       <ol className="mb-10 flex gap-1.5" aria-hidden>
@@ -333,7 +334,7 @@ export function WordsReview() {
           ) : (
             <RecordControl phase={recorder.phase} onStart={speak} onStop={recorder.stop} disabled={!heard} idleLabel={tries.length ? "Try again" : "Say it"} />
           )}
-          {word && <SaveWord word={word} />}
+          {word && event && <SaveWord word={word} />}
         </div>
       </div>
       <div className="mt-4 max-w-2xl">

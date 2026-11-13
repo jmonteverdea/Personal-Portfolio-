@@ -90,8 +90,7 @@ export function SoundGuide({ phoneme, entry, examples }: { phoneme: string; entr
         <Plate caption="Mouth position" aside={<Label as="span">Schematic, not anatomy</Label>}>
           <MouthDiagram shape={entry.mouth} className="mx-auto w-full max-w-sm" />
           <p className="mt-3 text-xs leading-relaxed text-fg-3">
-            Side view, lips on the left. <span className="text-signal">Tongue</span>, <span className="text-model">air</span>
-            {entry.mouth.to ? ", and a dashed outline for where the tongue ends." : "."}
+            Side view, lips on the left. <span className="text-signal">Red</span> is the tongue, <span className="text-model">blue</span> is the air{entry.mouth.to ? ", dashed is where the tongue ends" : ""}.
           </p>
         </Plate>
 

@@ -39,8 +39,17 @@ function tonguePath(pose: TonguePose, drop: number): string {
   const d = rides ? drop : drop * 0.35;
   const [tx, ty] = [tip[0], tip[1] + d];
   const [hx, hy] = [hump[0], hump[1] + d];
-  const floor = 150 + drop;
-  return `M188 ${floor} C188 ${hy + 16} ${hx + 26} ${hy} ${hx} ${hy} C${hx - 22} ${hy} ${tx + 22} ${ty - 3} ${tx} ${ty} C${tx - 5} ${ty + 4} ${tx + 2} ${ty + 12} ${tx + 12} ${ty + 16} L${tx + 16} ${floor} Z`;
+  const floor = 140 + drop;
+  // Root at the back, over the hump, out to the tip, then the underside curving back to the floor of the mouth.
+  return [
+    `M180 ${floor}`,
+    `C190 ${floor - 14} 186 ${hy + 18} ${hx + 26} ${hy + 3}`,
+    `C${hx + 12} ${hy - 3} ${hx - 14} ${hy - 2} ${(hx + tx) / 2 + 6} ${(hy + ty) / 2 - 2}`,
+    `C${tx + 16} ${ty - 1} ${tx + 6} ${ty - 3} ${tx} ${ty}`,
+    `C${tx - 4} ${ty + 5} ${tx + 4} ${ty + 12} ${tx + 16} ${ty + 16}`,
+    `C${tx + 28} ${ty + 20} ${tx + 30} ${floor - 6} ${tx + 44} ${floor}`,
+    "Z",
+  ].join(" ");
 }
 
 export function MouthDiagram({ shape, className = "" }: { shape: MouthShape; className?: string }) {
@@ -63,7 +72,7 @@ export function MouthDiagram({ shape, className = "" }: { shape: MouthShape; cla
       <path d={`M${22 + push} 58 Q${40 + push} 52 ${46 + push} 66 Q${48 + push} 74 ${42 + push} 77`} fill="none" stroke="var(--fg)" strokeWidth="1.5" strokeLinecap="round" />
       <path d="M57 64 L60 82 L64 66" fill="var(--surface)" stroke="var(--fg)" strokeWidth="1.25" strokeLinejoin="round" />
       <path d={`M46 62 Q60 54 72 58 Q104 28 150 46 Q170 54 ${shape.air === "nose" ? "170 78" : "182 60"}`} fill="none" stroke="var(--fg)" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M196 34 L196 172" fill="none" stroke="var(--fg)" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M192 34 L192 148" fill="none" stroke="var(--fg)" strokeWidth="1.5" strokeLinecap="round" />
       {/* nasal passage, drawn only as a route for the air */}
       <path d="M30 40 Q110 8 190 40" fill="none" stroke="var(--rule-strong)" strokeWidth="1" strokeDasharray="2 5" />
 
@@ -74,7 +83,7 @@ export function MouthDiagram({ shape, className = "" }: { shape: MouthShape; cla
       {/* lower teeth, lip and jaw move together */}
       {shape.lips !== "teeth-lip" && <path d={`M58 ${100 + drop} L60 ${86 + drop} L63 ${100 + drop}`} fill="var(--surface)" stroke="var(--fg)" strokeWidth="1.25" strokeLinejoin="round" />}
       <path d={`M${lowerLipX - 22} ${lowerLipY + 20} Q${lowerLipX - 6} ${lowerLipY + 20} ${lowerLipX} ${lowerLipY + 6} Q${lowerLipX + 2} ${lowerLipY - 2} ${lowerLipX - 3} ${lowerLipY - 3}`} fill="none" stroke="var(--fg)" strokeWidth="1.5" strokeLinecap="round" />
-      <path d={`M${lowerLipX - 22} ${lowerLipY + 20} Q60 ${166 + drop} 150 ${170 + drop}`} fill="none" stroke="var(--rule-strong)" strokeWidth="1" />
+      <path d={`M${lowerLipX - 22} ${lowerLipY + 20} Q70 ${160 + drop} 184 ${150 + drop}`} fill="none" stroke="var(--rule-strong)" strokeWidth="1" />
 
       {/* air */}
       {shape.air === "nose" ? (
@@ -87,11 +96,11 @@ export function MouthDiagram({ shape, className = "" }: { shape: MouthShape; cla
 
       {/* voice: a wave at the throat when the vocal folds vibrate, an empty ring when they do not */}
       {shape.voiced ? (
-        <path d="M204 150 q4 -8 8 0 t8 0 t8 0" fill="none" stroke="var(--signal)" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M200 164 q4 -8 8 0 t8 0 t8 0" fill="none" stroke="var(--signal)" strokeWidth="1.6" strokeLinecap="round" />
       ) : (
-        <circle cx="216" cy="150" r="6" fill="none" stroke="var(--fg-3)" strokeWidth="1.25" />
+        <circle cx="216" cy="162" r="6" fill="none" stroke="var(--fg-3)" strokeWidth="1.25" />
       )}
-      <text x="216" y="172" textAnchor="middle" className="label fill-(--fg-3)" style={{ fontSize: 7.5 }}>
+      <text x="230" y="184" textAnchor="end" className="label fill-(--fg-3)" style={{ fontSize: 7 }}>
         {shape.voiced ? "voice on" : "voice off"}
       </text>
     </svg>

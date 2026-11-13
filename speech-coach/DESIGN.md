@@ -161,6 +161,40 @@ Not built, on purpose: points, XP, coins, badges, leaderboards, mascots, confett
 | `/sound?p=` | Paper | One sound: stage, what moves it up, schedule, history |
 | `/scripts` | Paper | The script library |
 
+## Coach-parity screens
+
+Seven features added on the `coach-parity` branch. No new tokens, fonts or motion. Speaking screens use the stage theme, reading screens use paper.
+
+| Screen | Route | Theme | Learning rules applied |
+| --- | --- | --- | --- |
+| Baseline scan | `/scan`, `/scan/run` | paper, stage | Priorities by weighted recurrence. Positives first ("already clear" count). Retake shows before and after. Seeds the review queue and the Sound Map. |
+| Speak hub | `/speak` | paper | One choice per section. |
+| Conversation | `/talk/conversation` | stage | Quiet while thinking. At most one correction per turn, and only when there is a physical fix. Full analysis waits for the end. |
+| Delivery report | `/talk/report` | paper | Positives first, then one thing to work on. Weakest answer becomes a script to rehearse. |
+| Free talk | `/talk/free` | stage | Quiet while speaking. |
+| Shadowing | `/shadow` | stage | Listen, then speak, then compare. Model and own pitch drawn over the words. Three tries, then on. |
+| Sound library | `/sound?p=` | paper | Listen in several voices before speaking. Narrow pair first, with links to ear training and the scored drill. |
+| My words | `/words`, `/words/review` | paper, stage | Spaced review at 1, 3, 7, 14 days. Listen before the microphone opens. |
+| Event mode | `/event`, card on Today | paper | A short list per day. Words, then sentences, then full runs. No drilling on the day. |
+
+Score trust, applied across Results, drills, retries and coaching:
+
+- Clear is 80. Once a take is clear the app stops asking for another.
+- Three tries per item. After that the control becomes "Move on".
+- A low word with no physical instruction is drawn as plain text, not as an error.
+- "This was fine" is a quiet outline button beside the instruction. Undo sits in the same place.
+- Thumbs sit under each coaching note. A thumbs-down dims the note.
+
+The app never frames the goal as losing an accent. Copy uses "clear" and "understood", never "native".
+
+Storage: one new key, `speech-coach.modes.v1` (scans, talks, overrides, thumbs, words, events, shadows, settings). Included in export and import.
+
+Review of these screens: `design-review/parity/`, 38 screens at 1440px and 390px, captured by Playwright in Demo mode with no keys.
+
+Design juror pass. Found and fixed: the mouth diagram read as a box (tongue redrawn as one curve, voice label moved off the back wall); a redundant "In my words" chip beside the primary buttons in word review (removed outside event drills); Progress was highlighted in the nav on the event page (now Today). Left as is: the event card pushes the Today headline down. That is the requested position.
+
+Learning designer pass. Found and fixed: word review did not say its scores were simulated after the first try (now in the header for the whole drill); the retry panel kept offering tries after a clear score (now stops). Left as is: risky words for an event include short function words such as "the" and "is". They hold /ð/ and /z/, which are the sounds that cost the most, so they stay.
+
 ## Data
 
 Nothing existing changed shape. The learning layer stores drill takes, retries, ear-training results, the weekly target and the open session under one new key, `speech-coach.learning.v1`. Schedule, mastery and priorities are derived on the fly from the existing session history plus those drill takes, so they can never drift out of sync with it. Export adds an optional `learning` block. Old export files import as before.

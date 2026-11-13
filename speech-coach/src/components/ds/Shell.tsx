@@ -9,7 +9,7 @@ import { useConfig } from "../ConfigContext";
 import { Note } from "./ui";
 
 const NAV = [
-  { href: "/", label: "Today", match: (p: string) => p === "/" || p.startsWith("/session") || p.startsWith("/ear") },
+  { href: "/", label: "Today", match: (p: string) => p === "/" || p.startsWith("/session") || p.startsWith("/ear") || p.startsWith("/event") },
   { href: "/speak", label: "Speak", match: (p: string) => p.startsWith("/speak") || p.startsWith("/talk") || p.startsWith("/shadow") },
   { href: "/scripts", label: "Scripts", match: (p: string) => p.startsWith("/scripts") || p.startsWith("/practice") || p.startsWith("/results") },
   { href: "/progress", label: "Progress", match: (p: string) => p.startsWith("/progress") || p.startsWith("/sound") || p.startsWith("/scan") || p.startsWith("/words") },

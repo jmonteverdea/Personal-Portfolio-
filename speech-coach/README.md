@@ -60,6 +60,32 @@ Also free without the Anthropic key: a **scenario library** of 12 ready work scr
 
 Azure Speech has a free F0 tier (5 audio hours a month at the time of writing), so Azure scoring plus the built-in coach is a zero-cost setup.
 
+## Coach-parity modes
+
+Seven additions. The goal of all of them is to be understood the first time and to sound confident in meetings and presentations. None of them tries to remove an accent. The target is clear General American, and "clear" is a score of 80, not 100.
+
+Every mode works in Demo mode with no keys (simulated, labelled as sample). Where a mode needs Azure to produce a score, the screen says so and shows no number.
+
+| Mode | Where | Needs | Sent to Azure | Sent to Anthropic |
+| --- | --- | --- | --- | --- |
+| Baseline scan | `/scan` | Azure key. Without it the scan will not run. | Audio of six fixed passages | Nothing |
+| Conversation | `/speak`, `/talk/conversation` | Azure for voice replies and scores. Anthropic for a live partner. Without Anthropic the partner uses scripted lines. Without Azure you get a transcript and no pronunciation score. | Audio of each answer (unscripted assessment), partner text for the neural voice | The scenario and the transcript of the conversation so far |
+| Delivery report and free talk | `/talk/free`, `/talk/report` | Nothing for the report itself: fillers, pace, pauses, hedges and repeats are counted on your device. Long pauses need Azure word timing. Rewording needs Anthropic, else a rule-based tighten. | Audio of the talk | Only the one answer you ask to reword |
+| Shadowing with pitch | `/shadow` | Azure for the model voice and its pitch line. Without it the browser voice plays and only your own line is drawn. | Sentence text for the neural voice. Your repeat is analysed on your device and is not sent. | Nothing |
+| Sound library | `/sound?p=` from the Sound Map | Nothing. Static text. Voices are Azure with a key, browser voices without. | The example word, as text, when you press a voice | Nothing |
+| Score trust | Results, drills, retries, coaching | Nothing | Nothing extra | Up to eight coaching notes you marked not useful, with the next coaching request |
+| My words and event mode | `/words`, `/event`, top of Today | Azure to score a word. Without it the review checks the word was recognised and saves no score. | Audio of one word per try | Nothing |
+
+Notes:
+
+- Pronunciation scores on unscripted speech are less precise than on a script, because Azure has no reference text. The report labels them that way.
+- Pitch is extracted in the browser (YIN). Recordings used for shadowing never leave the device.
+- The sound library text was written for a Spanish speaker by the author of the app. It has not been reviewed by a speech therapist. The mouth diagrams are schematic.
+- Retries stop at three per word, sentence or drill stage, or sooner once the score is clear. A capped word goes to My words and comes back on a later day.
+- A low word is only drawn as an error when the app can say what to change physically. "This was fine" removes a word from your sound history. It is stored on your device and can be undone.
+- New data lives under one new localStorage key, `speech-coach.modes.v1`, and is part of Export and Import on the Progress page.
+- New server route: `/api/converse` (partner reply, "give me a line", rewording). Same rules as `/api/coach`: the key stays on the server.
+
 ## Privacy: what leaves your machine
 
 - **Azure Speech** (Full mode): your microphone audio and the script text are streamed to Microsoft for scoring. Reference pronunciations send the single word to Azure text-to-speech.
