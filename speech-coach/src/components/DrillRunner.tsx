@@ -8,6 +8,7 @@ import { useHotkeys } from "@/hooks/useHotkeys";
 import { useTakeRecorder, type TakeFinished } from "@/hooks/useTakeRecorder";
 import { buildAssessmentResult, buildTranscriptResult } from "@/lib/azure/normalize";
 import { guideFor } from "@/lib/coach/local";
+import { triesLeft, tryState } from "@/lib/modes/trust";
 import { simulateDrillTake } from "@/lib/fixtures/demo-learning";
 import { phonemeStatsFor } from "@/lib/history";
 import { stageMaterial, wordsWithSound } from "@/lib/learning/content";
@@ -114,10 +115,14 @@ export function DrillRunner({ phoneme, onDone, doneLabel = "Done" }: { phoneme: 
     keepTake(simulateDrillTake(material.text, phoneme, stage, targets, newId("drill"), new Date()), null);
   }, [keepTake, material.text, phoneme, stage, targets]);
 
+  // Score trust: no more tries once the sound is clear, and never more than three on one stage.
+  const tries = (takes[stage] ?? []).length;
+  const state = take ? tryState(take.target, tries) : "again";
   const retry = useCallback(() => {
+    if (state !== "again") return;
     recorder.clearError();
     setStep("speak");
-  }, [recorder]);
+  }, [recorder, state]);
 
   const next = useCallback(() => {
     if (stageIndex >= DRILL_STAGES.length - 1) {
@@ -147,7 +152,7 @@ export function DrillRunner({ phoneme, onDone, doneLabel = "Done" }: { phoneme: 
             m: word ? () => void player.playModel(bare(word.text)) : undefined,
             p: clip ? () => void player.playMine(clip) : undefined,
             c: word && clip ? () => void player.compare(bare(word.text), clip) : undefined,
-            r: retry,
+            r: state === "again" ? retry : undefined,
             n: next,
             enter: next,
             arrowleft: () => move(-1),
@@ -357,13 +362,20 @@ export function DrillRunner({ phoneme, onDone, doneLabel = "Done" }: { phoneme: 
                     A then B
                   </Button>
                   <span className="mx-1 hidden h-6 w-px bg-rule sm:block" aria-hidden />
-                  <Button onClick={retry} hotkey="R">
-                    Try again
-                  </Button>
+                  {state === "again" && (
+                    <Button onClick={retry} hotkey="R">
+                      Try again · {triesLeft(tries)} left
+                    </Button>
+                  )}
                   <Button variant="solid" onClick={next} hotkey="N">
                     {stageIndex >= DRILL_STAGES.length - 1 ? "Finish" : "Next stage"}
                   </Button>
                 </div>
+                {state !== "again" && (
+                  <p className="mt-4 text-sm text-fg-2" data-try-state={state}>
+                    {state === "clear" ? "Clear. That is the target, not 100, so there is nothing more to repeat here." : `Three tries is the cap. Move on. This sound stays in your review queue and comes back on a later day.`}
+                  </p>
+                )}
                 <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-3">
                   <Kbd>←</Kbd>
                   <Kbd>→</Kbd> choose a word.

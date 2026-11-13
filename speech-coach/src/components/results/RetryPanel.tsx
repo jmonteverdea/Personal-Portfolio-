@@ -9,6 +9,9 @@ import { buildAssessmentResult, buildTranscriptResult } from "@/lib/azure/normal
 import { simulateRetryScores } from "@/lib/fixtures/demo-learning";
 import { getLearningAudio, learning, useLearning } from "@/lib/learning/store";
 import type { RetryRecord } from "@/lib/learning/types";
+import { modes, useModes } from "@/lib/modes/store";
+import { MAX_TRIES, triesLeft, tryState } from "@/lib/modes/trust";
+import { addWords } from "@/lib/modes/words";
 import { newId } from "@/lib/store";
 import type { AssessmentResult, WordResult } from "@/lib/types";
 import { useConfig } from "../ConfigContext";
@@ -43,6 +46,7 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
   const { retries } = useLearning();
   const player = useCompare();
   const [heardModel, setHeardModel] = useState(false);
+  const { words: savedWords } = useModes();
 
   const beforeWords = useMemo(
     () =>
@@ -56,7 +60,11 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
   const targetIndex = target.kind === "word" ? beforeWords[0]?.refIndex ?? target.index : target.index;
   const history = retries.filter((r) => r.resultId === result.id && r.kind === target.kind && r.targetIndex === targetIndex);
   const latest = history[history.length - 1] ?? null;
+  const triesUsed = history.length;
   const simulated = atlas.demoMode || result.source === "demo";
+  // Score trust: stop once it is clear, and stop after three tries either way.
+  const state = latest ? tryState(latest.after, history.length) : "again";
+  const open = state === "again";
 
   const save = useCallback(
     (after: { accuracy: number | null; said: boolean }[], source: RetryRecord["source"], audio: Blob | null, clip: { offsetMs: number; durationMs: number } | null) => {
@@ -79,8 +87,13 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
       };
       if (clip) record.clip = clip;
       learning.addRetry(record, audio);
+      // Third try and still not clear: move on, and keep the hardest word for a later review.
+      if (tryState(record.after, triesUsed + 1) === "capped") {
+        const hardest = [...record.words].sort((a, b) => (a.after ?? 0) - (b.after ?? 0))[0];
+        if (hardest) modes.setWords(addWords(savedWords, [hardest.text], "retry-cap", source, new Date(), () => newId("word")).words);
+      }
     },
-    [before, beforeWords, result.id, target.kind, targetIndex, text],
+    [before, beforeWords, triesUsed, result.id, savedWords, target.kind, targetIndex, text],
   );
 
   const onFinished = useCallback(
@@ -110,11 +123,12 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
     setHeardModel(true);
   }, [player, text]);
   const record = useCallback(() => {
-    if (heardModel) void recorder.start(text);
-  }, [heardModel, recorder, text]);
+    if (heardModel && open) void recorder.start(text);
+  }, [heardModel, open, recorder, text]);
   const simulate = useCallback(() => {
+    if (!open) return;
     save(simulateRetryScores(beforeWords).map((accuracy) => ({ accuracy, said: true })), "demo", null, null);
-  }, [beforeWords, save]);
+  }, [beforeWords, open, save]);
 
   const audio = latest ? getLearningAudio(latest.id) : null;
   const storedClip = latest?.clip;
@@ -122,9 +136,9 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
 
   useHotkeys({
     m: () => void listen(),
-    space: recording ? recorder.stop : recorder.phase === "idle" && heardModel && !simulated ? record : undefined,
-    enter: simulated && heardModel ? simulate : undefined,
-    r: !simulated && heardModel && recorder.phase === "idle" ? record : simulated && heardModel ? simulate : undefined,
+    space: recording ? recorder.stop : recorder.phase === "idle" && heardModel && !simulated && open ? record : undefined,
+    enter: simulated && heardModel && open ? simulate : undefined,
+    r: !open ? undefined : !simulated && heardModel && recorder.phase === "idle" ? record : simulated && heardModel ? simulate : undefined,
     p: clip ? () => void player.playMine(clip) : undefined,
     c: clip ? () => void player.compare(text, clip) : undefined,
     escape: onClose,
@@ -156,7 +170,11 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
             <Button variant={heardModel ? "outline" : "solid"} onClick={() => void listen()} busy={player.playing === "model"} hotkey="M" disabled={recording}>
               {heardModel ? "Model again" : "Hear the model first"}
             </Button>
-            {simulated ? (
+            {!open ? (
+              <Button variant="solid" onClick={onClose} hotkey="esc">
+                Move on
+              </Button>
+            ) : simulated ? (
               <Button variant="solid" onClick={simulate} disabled={!heardModel} hotkey="enter">
                 {latest ? "Simulate another try" : "Simulate my retry"}
               </Button>
@@ -166,7 +184,16 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
           </div>
         </div>
         <p className="mt-3 text-xs text-fg-3">
-          {!heardModel
+          {state === "clear"
+            ? "Clear. That is the target, not 100. No need to say it again."
+            : state === "capped"
+              ? `That was try ${MAX_TRIES}, the cap. More repeats now add frustration, not skill. The hardest word is saved to My words and comes back in a later review.`
+              : latest
+                ? `${triesLeft(history.length)} of ${MAX_TRIES} tries left. `
+                : ""}
+          {!open
+            ? ""
+            : !heardModel
             ? "Listen first. The microphone opens after the model has played."
             : simulated
               ? "Demo: a sample retry stands in for your voice."
@@ -205,7 +232,7 @@ export function RetryPanel({ result, target, onClose }: { result: AssessmentResu
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
               {delta !== null ? (
                 <p className="text-base">
-                  {delta >= 3 ? "Better." : delta <= -3 ? "Not this time. Hear the model once more, then go again." : "About the same. Slow it down and go again."}{" "}
+                  {state === "clear" ? "Clear." : delta >= 3 ? "Better." : state === "capped" ? "Leave it for today." : delta <= -3 ? "Not this time. Hear the model once more, then go again." : "About the same. Slow it down and go again."}{" "}
                   <Delta value={delta} suffix=" points" />
                 </p>
               ) : (

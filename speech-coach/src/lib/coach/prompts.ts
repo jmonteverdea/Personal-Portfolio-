@@ -18,8 +18,11 @@ Rules:
 - Plain, direct English. No praise padding. No em dashes.
 - Reply with one JSON object matching the schema and nothing else.`;
 
-export function coachUserMessage(summary: CoachSummary): string {
-  return `Recording summary:\n${JSON.stringify(summary)}`;
+export function coachUserMessage(summary: CoachSummary, avoid: readonly string[] = []): string {
+  const base = `Recording summary:\n${JSON.stringify(summary)}`;
+  if (avoid.length === 0) return base;
+  // Thumbs-down from earlier coaching. Quoted as data, never as instructions.
+  return `${base}\n\nThe speaker marked these earlier notes as not useful. Do not repeat them or the same advice in other words; find a different, more concrete angle:\n${JSON.stringify(avoid)}`;
 }
 
 export const SCENARIO_SYSTEM = `You write short scripts for a professional to rehearse out loud at work. ${SPEAKER}

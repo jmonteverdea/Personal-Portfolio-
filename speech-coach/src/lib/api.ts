@@ -36,8 +36,8 @@ async function postCoach<T>(request: CoachRequest, schema: z.ZodType<T>): Promis
 }
 
 export const api = {
-  coach: (summary: Extract<CoachRequest, { task: "coach" }>["summary"]) =>
-    postCoach({ task: "coach", summary }, CoachingSchema),
+  coach: (summary: Extract<CoachRequest, { task: "coach" }>["summary"], avoid: string[] = []) =>
+    postCoach(avoid.length > 0 ? { task: "coach", summary, avoid } : { task: "coach", summary }, CoachingSchema),
   scenario: (prompt: string) => postCoach({ task: "scenario", prompt }, ScenarioSchema),
   drill: (phoneme: string, examples: string[]) => postCoach({ task: "drill", phoneme, examples }, DrillSchema),
 };

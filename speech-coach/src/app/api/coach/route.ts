@@ -74,7 +74,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const req = input.data;
     if (req.task === "coach") {
-      return NextResponse.json({ data: await ask(client, model, COACH_SYSTEM, coachUserMessage(req.summary), CoachingSchema) });
+      return NextResponse.json({ data: await ask(client, model, COACH_SYSTEM, coachUserMessage(req.summary, req.avoid), CoachingSchema) });
     }
     if (req.task === "scenario") {
       return NextResponse.json({ data: await ask(client, model, SCENARIO_SYSTEM, scenarioUserMessage(req.prompt), ScenarioSchema) });

@@ -110,7 +110,12 @@ export const CoachSummarySchema = z.object({
 export type CoachSummary = z.infer<typeof CoachSummarySchema>;
 
 export const CoachRequestSchema = z.discriminatedUnion("task", [
-  z.object({ task: z.literal("coach"), summary: CoachSummarySchema }),
+  z.object({
+    task: z.literal("coach"),
+    summary: CoachSummarySchema,
+    /** Optional. Notes the speaker marked as not useful, so the coach stops repeating them. */
+    avoid: z.array(z.string().max(240)).max(8).optional(),
+  }),
   z.object({ task: z.literal("scenario"), prompt: z.string().trim().min(3).max(600) }),
   z.object({
     task: z.literal("drill"),

@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useCompare, type MineClip } from "@/hooks/useCompare";
 import { useHotkeys } from "@/hooks/useHotkeys";
-import { getTakeAudio } from "@/lib/store";
+import { modes, useModes } from "@/lib/modes/store";
+import { contributionsOf, explainLowWord, isClear } from "@/lib/modes/trust";
+import { getTakeAudio, newId } from "@/lib/store";
 import type { AssessmentResult, WordResult } from "@/lib/types";
 import { band, BAND_BG, BAND_TEXT, bare, Button, Label, Sound } from "../ds/ui";
+import { SaveWord } from "../modes/SaveWord";
 
 function statusLine(word: WordResult): string {
   switch (word.status) {
@@ -39,6 +42,14 @@ export function WordDetail({
   const clip: MineClip | null = audio && word.offsetMs !== null && word.durationMs !== null ? { blob: audio, offsetMs: word.offsetMs, durationMs: word.durationMs } : null;
   const text = bare(word.text);
   const canRetry = word.status !== "insertion";
+  const { overrides } = useModes();
+  const overridden = word.refIndex !== null && overrides.some((o) => o.resultId === result.id && o.refIndex === word.refIndex);
+  const low = word.status !== "omission" && word.status !== "insertion" && word.accuracy !== null && !isClear(word.accuracy);
+  const explanation = low ? explainLowWord(word.phonemes) : null;
+  const markFine = () => {
+    if (word.refIndex === null) return;
+    modes.addOverride({ id: newId("override"), date: new Date().toISOString(), resultId: result.id, refIndex: word.refIndex, word: text, contributions: contributionsOf(word.phonemes) });
+  };
 
   useHotkeys(
     {
@@ -111,6 +122,39 @@ export function WordDetail({
         <p className="mt-5 border-y border-rule px-5 py-4 text-sm text-fg-3 sm:px-7">{word.status === "omission" ? "No sounds to show for a skipped word." : "No sound data. Sound scoring needs Azure Speech."}</p>
       )}
 
+      {low && (
+        <div className="border-b border-rule px-5 py-5 sm:px-7" data-trust={overridden ? "overridden" : explanation ? "flagged" : "unexplained"}>
+          {overridden ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[0.9375rem] leading-relaxed text-fg-2">You marked this word as fine. It no longer counts against your sounds.</p>
+              <button type="button" onClick={() => word.refIndex !== null && modes.removeOverride(result.id, word.refIndex)} className="label press border border-rule-strong px-3 py-2 text-fg-2 hover:border-fg hover:!text-fg">
+                Undo
+              </button>
+            </div>
+          ) : explanation ? (
+            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+              <div>
+                <Label>
+                  What to change · <Sound>{explanation.phoneme}</Sound>
+                  {explanation.heardAs && (
+                    <>
+                      {" "}
+                      came out as <Sound>{explanation.heardAs}</Sound>
+                    </>
+                  )}
+                </Label>
+                <p className="mt-2 max-w-2xl text-[0.9375rem] leading-relaxed">{explanation.instruction}</p>
+              </div>
+              <button type="button" onClick={markFine} className="label press border border-rule-strong px-3 py-2 text-fg-2 hover:border-fg hover:!text-fg" title="Scores can be wrong. This takes the word out of your sound history.">
+                This was fine
+              </button>
+            </div>
+          ) : (
+            <p className="text-[0.9375rem] leading-relaxed text-fg-2">This scored under {80}, but there is nothing specific to change, so it is not counted as an error. Scores wobble on short and unstressed words.</p>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3 px-5 py-5 sm:px-7">
         <Button onClick={() => void player.playModel(text)} busy={player.playing === "model"} hotkey="M">
           Model
@@ -126,6 +170,7 @@ export function WordDetail({
             Retry this word
           </Button>
         )}
+        {word.status !== "insertion" && <SaveWord word={text} />}
         <button type="button" onClick={onClose} className="label ml-auto text-fg-3 hover:text-fg">
           Close · esc
         </button>

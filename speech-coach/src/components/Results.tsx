@@ -11,6 +11,8 @@ import { guideFor } from "@/lib/coach/local";
 import { phonemeStatsFor } from "@/lib/history";
 import { scriptDelta, soundChanges } from "@/lib/learning/bests";
 import { useLearning } from "@/lib/learning/store";
+import { useModes } from "@/lib/modes/store";
+import { isClear, shouldFlag } from "@/lib/modes/trust";
 import { stopPlayback } from "@/lib/speech/playback";
 import { useStore } from "@/lib/store";
 import type { AssessmentResult, WordResult } from "@/lib/types";
@@ -87,6 +89,7 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
   const store = useStore();
   const atlas = useAtlas();
   const { retries } = useLearning();
+  const { overrides } = useModes();
   const focus = useFocus(result);
   const root = useRef<HTMLDivElement>(null);
   const timeline = useRef<gsap.core.Timeline | null>(null);
@@ -183,6 +186,10 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
   // Shortcuts for the top level. A selected word or an open retry has its own.
   useHotkeys({ r: word || retry ? undefined : focus || weakestSentence !== null ? fixNow : undefined, escape: skipReveal }, !retry);
 
+  // Score trust: a low word is only drawn as an error when there is something physical to change and I have not overridden it.
+  const fine = new Set(overrides.filter((o) => o.resultId === result.id).map((o) => o.refIndex));
+  const quiet = (w: (typeof result.words)[number]) =>
+    w.status !== "omission" && w.status !== "insertion" && w.accuracy !== null && !isClear(w.accuracy) && !shouldFlag(w, w.refIndex !== null && fine.has(w.refIndex));
   const retriedWords = new Set(retries.filter((r) => r.resultId === result.id && r.kind === "word").map((r) => r.targetIndex));
 
   return (
@@ -267,7 +274,7 @@ function ResultView({ result, guided, replay }: { result: AssessmentResult; guid
                         }}
                         aria-pressed={w.index === selected}
                         aria-label={`${bare(w.text)}: ${w.status}${w.accuracy !== null ? `, ${Math.round(w.accuracy)}` : ""}`}
-                        className={`rounded-[2px] ${wordClass(w)} ${w.index === selected ? "bg-fg !text-bg !decoration-bg" : "hover:bg-surface"}`}
+                        className={`rounded-[2px] ${quiet(w) ? "w-plain" : wordClass(w)} ${w.index === selected ? "bg-fg !text-bg !decoration-bg" : "hover:bg-surface"}`}
                       >
                         {w.status === "insertion" && <span aria-hidden>+</span>}
                         {w.text}
