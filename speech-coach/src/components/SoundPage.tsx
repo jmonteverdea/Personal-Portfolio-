@@ -11,7 +11,11 @@ import { MASTERY_NAMES, MASTERY_RULES, nextStageHint } from "@/lib/learning/mast
 import { isRealSpeech } from "@/lib/learning/observations";
 import { describeDue } from "@/lib/learning/schedule";
 import { useRouter } from "next/navigation";
+import { libraryEntry } from "@/lib/modes/soundLibrary";
+import { SoundGuide } from "./modes/SoundGuide";
 import { band, BAND_TEXT, Delta, formatDay, Label, LinkButton, Loading, MasteryGlyph, Plate, Sound, StateBlock } from "./ds/ui";
+
+const EMPTY: readonly string[] = [];
 
 /** One sound: where it stands, what moves it up, and the two ways to work on it. */
 export function SoundPage() {
@@ -24,11 +28,37 @@ export function SoundPage() {
   useHotkeys({ enter: entry ? () => router.push(reviewHref) : undefined, e: entry && hasPairs(phoneme) ? () => router.push(earHref) : undefined });
 
   if (!atlas.hydrated) return <Loading label="Reading your history" />;
+  const library = libraryEntry(phoneme);
   if (!entry) {
+    if (!library) {
+      return (
+        <StateBlock kind="empty" title="That sound is not in the library." action={<LinkButton href="/progress" variant="solid">Back to the map</LinkButton>}>
+          Pick a sound from the map.
+        </StateBlock>
+      );
+    }
+    // Not practised yet: no scores to show, so the page is the library entry alone.
     return (
-      <StateBlock kind="empty" title="No data for that sound yet." action={<LinkButton href="/progress" variant="solid">Back to the map</LinkButton>}>
-        A sound appears once a scored take contains it.
-      </StateBlock>
+      <div>
+        <Link href="/progress" className="label text-fg-3 hover:text-fg">
+          ← Sound map
+        </Link>
+        <div className="mt-6 flex flex-wrap items-end gap-x-12 gap-y-6">
+          <p className="ipa rise text-[clamp(7rem,18vw,13rem)] leading-[0.8]" aria-label={`Sound ${phoneme}`}>
+            {phoneme}
+          </p>
+          <div className="rise max-w-md pb-2" style={{ "--i": 1 } as React.CSSProperties}>
+            <p className="display text-3xl">Not practised yet</p>
+            <p className="mt-2 text-sm leading-relaxed text-fg-3">No scored take has contained this sound, so there is no score or stage to show. It gets one the first time a take or a baseline scan hears it.</p>
+            <div className="mt-5">
+              <LinkButton href="/scan" variant="solid">
+                Run the baseline scan
+              </LinkButton>
+            </div>
+          </div>
+        </div>
+        <SoundGuide phoneme={phoneme} entry={library} examples={[]} />
+      </div>
     );
   }
 
@@ -134,30 +164,23 @@ export function SoundPage() {
             </svg>
           </Plate>
 
-          {(guide || priority) && (
-            <div className="grid gap-10 sm:grid-cols-2">
-              {guide && (
-                <div>
-                  <Label>How to make it</Label>
-                  <p className="mt-3 text-[0.9375rem] leading-relaxed">{guide.how}</p>
-                  <p className="mt-3 text-sm text-fg-3">
-                    Minimal pair: <span className="text-fg">{guide.pair[0]}</span> against {guide.pair[1]}
-                  </p>
-                </div>
+          {priority && (
+            <div>
+              <Label>Where it costs you</Label>
+              <p className="mt-3 text-[0.9375rem] leading-relaxed">
+                Weak in {priority.weakSessions} of {priority.sessions} takes{priority.weakScripts > 1 ? `, across ${priority.weakScripts} scripts` : ""}.
+              </p>
+              {priority.examples.length > 0 && (
+                <p className="mt-3 text-sm text-fg-3">
+                  In your words: <span className="text-fg">{priority.examples.join(", ")}</span>
+                </p>
               )}
-              {priority && (
-                <div>
-                  <Label>Where it costs you</Label>
-                  <p className="mt-3 text-[0.9375rem] leading-relaxed">
-                    Weak in {priority.weakSessions} of {priority.sessions} takes{priority.weakScripts > 1 ? `, across ${priority.weakScripts} scripts` : ""}.
-                  </p>
-                  {priority.examples.length > 0 && (
-                    <p className="mt-3 text-sm text-fg-3">
-                      In your words: <span className="text-fg">{priority.examples.join(", ")}</span>
-                    </p>
-                  )}
-                </div>
-              )}
+            </div>
+          )}
+          {!library && guide && (
+            <div>
+              <Label>How to make it</Label>
+              <p className="mt-3 text-[0.9375rem] leading-relaxed">{guide.how}</p>
             </div>
           )}
           <p className="text-xs text-fg-3">
@@ -165,6 +188,7 @@ export function SoundPage() {
           </p>
         </div>
       </div>
+      {library && <SoundGuide phoneme={phoneme} entry={library} examples={priority?.examples ?? EMPTY} />}
     </div>
   );
 }

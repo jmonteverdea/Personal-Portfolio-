@@ -62,10 +62,10 @@ function Point({ x, y, phoneme, entry }: { x: number; y: number; phoneme: string
     </g>
   );
 
-  if (!entry) return <g aria-label={label}>{body}</g>;
+  // Sounds I have not practised still open their library page: how to make it, and how it sounds.
   return (
     <Link
-      href={`/sound?p=${encodeURIComponent(entry.phoneme)}`}
+      href={`/sound?p=${encodeURIComponent(entry?.phoneme ?? phoneme)}`}
       aria-label={label}
       className={`outline-none transition-colors duration-200 hover:text-model [&:focus-visible_circle:first-of-type]:stroke-(--focus) [&:focus-visible_circle:first-of-type]:[stroke-width:2] ${due ? "text-signal" : "text-fg"}`}
     >

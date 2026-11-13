@@ -4,6 +4,7 @@ import { CONSONANTS, VOWELS } from "@/lib/learning/map";
 import { analyzeDelivery, RAMBLING_WORDS, tightenByRules } from "@/lib/modes/delivery";
 import { activeEvent, buildEventPlan, hardSentencesIn, MAX_PLAN_DAYS, PACE_TARGET, riskyWordsIn } from "@/lib/modes/event";
 import { alignTime, stressGaps, chunkSentence, compareContours, extractPitch, medianHz, pitchPerWord, pitchRange, smoothContour, toSemitones, type Contour } from "@/lib/modes/pitch";
+import { libraryEntry, SOUND_LIBRARY } from "@/lib/modes/soundLibrary";
 import { CLARITY_NAMES, CLEAR, compareScans, daysUntilRetake, mergeStats, SCAN_PARTS, SCAN_TARGETS, summarizeScan } from "@/lib/modes/scan";
 import { customScenario, pickCorrection, SCENARIOS, scriptedReply, turnFromOutcome } from "@/lib/modes/talk";
 import { exportableModes, mergeModes, parseModesImport } from "@/lib/modes/transfer";
@@ -568,5 +569,32 @@ describe("drawing two voices over the same words", () => {
     expect(gaps.length).toBeLessThanOrEqual(2);
     expect(stressGaps(model, model, modelWords, modelWords)).toEqual([]);
     expect(stressGaps(model, mine, modelWords, [])).toEqual([]);
+  });
+});
+
+describe("sound library", () => {
+  const inventory = [...CONSONANTS.map((c) => c.phoneme), ...VOWELS.map((v) => v.phoneme)];
+  it("has one complete entry for every sound on the map", () => {
+    expect(Object.keys(SOUND_LIBRARY).sort()).toEqual([...inventory].sort());
+    for (const [phoneme, e] of Object.entries(SOUND_LIBRARY)) {
+      expect(e.keyword.length, phoneme).toBeGreaterThan(1);
+      for (const field of [e.tongue, e.lips, e.jaw, e.air, e.es]) expect(field.length, phoneme).toBeGreaterThan(3);
+      expect(e.es).not.toBe(e.tongue);
+    }
+  });
+  it("names the Spanish trap for the contrasts that matter", () => {
+    for (const phoneme of ["v", "b", "θ", "ð", "z", "ʃ", "dʒ", "ɪ", "ʊ", "æ", "ʌ", "ə", "r", "h", "t", "d", "ŋ"]) expect(SOUND_LIBRARY[phoneme]!.trap, phoneme).toBeTruthy();
+    expect(SOUND_LIBRARY.v!.trap).toMatch(/lips never touch/);
+    expect(SOUND_LIBRARY.f!.trap).toBeNull();
+  });
+  it("gives diphthongs a start and an end position, and resolves Azure's alternate symbols", () => {
+    for (const phoneme of ["eɪ", "aɪ", "oʊ", "aʊ", "ɔɪ"]) expect(SOUND_LIBRARY[phoneme]!.mouth.to, phoneme).toBeDefined();
+    expect(libraryEntry("ɹ")?.keyword).toBe("red");
+    expect(libraryEntry("/g/")?.keyword).toBe("go");
+    expect(libraryEntry("ɬ")).toBeNull();
+  });
+  it("never frames the goal as losing an accent", () => {
+    const all = JSON.stringify(SOUND_LIBRARY).toLowerCase();
+    for (const phrase of ["native-like", "accent reduction", "lose your accent", "sound american"]) expect(all).not.toContain(phrase);
   });
 });
