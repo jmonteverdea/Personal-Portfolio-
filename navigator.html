@@ -1097,6 +1097,32 @@ a[href^="tel:"], .page-list a[href^="mailto:"] { white-space: nowrap; }
 .cardx.is-changed > :first-child::after { content: "Updated"; background: var(--ink2); }
 .ch-upd { background: var(--ink2); color: var(--bg); }
 @media print { .cardx.is-added > :first-child::after, .cardx.is-changed > :first-child::after { display: none; } }
+
+/* ---- Styling pass, 20 November 2026 ----
+   One heading scale, a gap between the lead and the switches, a tag that keeps its sentence
+   beside it, and a program-page button that keeps its marker. */
+.r-lead + .r-split, .r-lead + .whatif { margin-top: 24px; }
+.r-fold > summary { align-items: center; }
+.r-fold > summary > h2 { flex: 0 1 auto; min-width: 0; }
+.r-count { align-self: center; font-size: 15px; padding: 3px 11px; }
+@media (max-width: 640px) {
+  .r-fold { margin-top: 32px; }
+  .r-fold > summary > h2 { font-size: 22px; font-weight: 750; }
+  .wi-chips { gap: 6px; }
+  .wi-chip { padding: 8px 12px; font-size: 14.5px; gap: 7px; }
+}
+.p-soon { display: flex; align-items: baseline; gap: 8px; }
+.p-soon-tag { flex: none; margin-right: 0; }
+.foot-link { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* On a phone most upgrade names are wider than half the screen, so pills fall one to a line
+   and the switches run longer than a screen. Two columns of rounded tiles halve that. */
+@media (max-width: 640px) {
+  .whatif .wi-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .whatif .wi-chip { border-radius: 12px; min-height: 52px; padding: 8px 10px; font-size: 14px; line-height: 1.25; }
+  /* The marker becomes a caption under its own button, with clear space before the next one. */
+  .card-foot { row-gap: 14px; }
+  .foot-link { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
 </style>
 </head>
 <body>
@@ -1869,7 +1895,7 @@ function programCard(m, tag, firstAt) {
     + (p.provides ? '<p><span class="label">What it provides:</span> ' + esc(p.provides) + chip(p, 'provides') + '</p>' : '')
     + '</details>'
     + '<div class="card-foot">'
-    + (p.link ? '<a class="btn-line" href="' + esc(p.link) + '" target="_blank" rel="noopener" aria-label="Open the program page: ' + esc(p.name) + ' (opens in a new tab)">Open the program page</a>' + chip(p, 'link')
+    + (p.link ? '<span class="foot-link"><a class="btn-line" href="' + esc(p.link) + '" target="_blank" rel="noopener" aria-label="Open the program page: ' + esc(p.name) + ' (opens in a new tab)">Open the program page</a>' + chip(p, 'link') + '</span>'
       : '<p class="fine">No program link yet.' + chip(p, 'link') + '</p>')
     /* The program's own page, and a way to reach RARA about it without leaving the page. */
     + (CONTACT_SEC ? '<a class="btn-line btn-help" href="#fr-talk">Get help with this</a>' : '')
