@@ -1123,11 +1123,25 @@ a[href^="tel:"], .page-list a[href^="mailto:"] { white-space: nowrap; }
   .card-foot { row-gap: 14px; }
   .foot-link { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
+
+/* ---- Interaction polish, 20 November 2026 ----
+   Every control answers a press the way the buttons already do, wrapped headings don't leave
+   one word alone, and numbers that change don't shift their neighbours. */
+.wi-chip, .lib-f { transition-property: background-color, border-color, color, transform; transition-duration: 150ms; transition-timing-function: ease-out; }
+.wi-chip:active, .lib-f:active { transform: scale(0.97); }
+.path li:has(.path-t) { transition: background-color 150ms ease-out; border-radius: 10px; }
+.path li:has(.path-t:active) { background-color: var(--tint); }
+.r-fold > summary { transition: color 150ms ease-out; }
+.r-fold > summary:active > h2 { opacity: .75; }
+@media (prefers-reduced-motion: reduce) { .wi-chip:active, .lib-f:active { transform: none; } }
+.r-block > h2, .r-fold > summary > h2, .r-lead > h2, .cardx h2, .cardx h3, .cardx h4, .notices h3, .r-sub, .when-what { text-wrap: balance; }
+.lead-why, .notices p, .cardx > p, .p-soon, .wi-said, .when-text, .r-none { text-wrap: pretty; }
+.r-count, .when-left, .lead-list > li::before, .r-index .num { font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 <a class="skip" href="#app">Skip to the main content</a>
-<p class="betaline" role="note"><b>Member beta.</b> A screening tool, not an energy study or a technical assessment.<span class="beta-more"> Programs and amounts change, so don't base a financial or design decision on it alone.</span></p>
+<aside aria-label="About this tool"><p class="betaline" role="note"><b>Member beta.</b> A screening tool, not an energy study or a technical assessment.<span class="beta-more"> Programs and amounts change, so don't base a financial or design decision on it alone.</span></p></aside>
 <header class="appbar">
   <div class="appbar-in">
     <div class="mark">
